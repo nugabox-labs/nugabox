@@ -84,41 +84,57 @@ function git_exec(array $args, array $extraConfig = []): array
 }
 
 /**
- * push 에 쓸 자격증명 헬퍼 설정을 준비한다.
+ * push 에 쓸 자격증명을 어떻게 마련할지 판단한다.
  *
  * PHP-FPM 사용자(시놀로지는 보통 http)는 자기 홈에 자격증명이 없어
  * "could not read Username for 'https://github.com'" 으로 실패한다.
  * 토큰을 명령줄에 노출하지 않으려고, 0600 임시 파일에 담아
  * credential.helper=store 로 넘긴다. (경로만 argv 에 남는다)
  *
- * @return array{0: string[], 1: ?string} [git -c 인자, 정리해야 할 임시 파일]
+ * $dryRun 이면 임시 파일을 만들지 않고 판단 결과만 돌려준다. (진단용)
+ *
+ * @return array{ok:bool, source:string, reason:string, config:string[], file:?string}
  */
-function git_credential_config(): array
+function git_credential_resolve(bool $dryRun = false): array
 {
     $g = (array) cfg('git', []);
+    $fail = static fn(string $source, string $reason): array
+        => ['ok' => false, 'source' => $source, 'reason' => $reason, 'config' => [], 'file' => null];
 
-    // 이미 만들어 둔 자격증명 파일을 쓰는 경우
+    // 1) 이미 만들어 둔 자격증명 파일
     $shared = (string) ($g['credentials_file'] ?? '');
-    if ($shared !== '' && is_readable($shared)) {
-        return [['credential.helper=store --file=' . $shared], null];
+    if ($shared !== '') {
+        if (!is_readable($shared)) {
+            return $fail('file', "GIT_CREDENTIALS_FILE 을 읽을 수 없습니다: {$shared}");
+        }
+        return [
+            'ok' => true, 'source' => 'file', 'reason' => '자격증명 파일 사용',
+            'config' => ['credential.helper=store --file=' . $shared], 'file' => null,
+        ];
     }
 
+    // 2) 토큰
     $token = (string) ($g['token'] ?? '');
     if ($token === '') {
-        return [[], null];   // 서버에 이미 설정된 헬퍼에 맡긴다
+        return $fail('server', 'GIT_TOKEN 이 비어 있습니다. 서버에 이미 설정된 자격증명에 의존합니다.');
     }
 
-    // 원격 URL 에서 호스트와 사용자명을 얻는다.
-    [$code, $url] = git_exec(['remote', 'get-url', $g['remote'] ?? 'origin']);
-    if ($code !== 0 || $url === '') {
-        return [[], null];
+    $remote = $g['remote'] ?? 'origin';
+    [$code, $url, $err] = git_exec(['remote', 'get-url', $remote]);
+    if ($code !== 0 || trim($url) === '') {
+        // 오래된 git 은 remote get-url 이 없다.
+        [$code, $url] = git_exec(['config', '--get', "remote.{$remote}.url"]);
     }
-    $parts = parse_url(trim($url));
+    $url = trim($url);
+    if ($url === '') {
+        return $fail('token', "원격 '{$remote}' 의 URL 을 읽지 못했습니다. " . trim($err));
+    }
+
+    $parts = parse_url($url);
     if (!$parts || !in_array($parts['scheme'] ?? '', ['https', 'http'], true) || empty($parts['host'])) {
-        return [[], null];   // ssh 원격이면 토큰을 쓸 일이 없다
+        return $fail('token', "원격이 https 가 아니라 토큰을 쓸 수 없습니다: {$url}");
     }
-    $origin = $parts['scheme'] . '://%s:%s@' . $parts['host']
-        . (isset($parts['port']) ? ':' . $parts['port'] : '');
+
     $user = (string) ($g['username'] ?? '');
     if ($user === '') {
         $user = (string) ($parts['user'] ?? '');
@@ -127,14 +143,51 @@ function git_credential_config(): array
         $user = 'x-access-token';   // GitHub 은 사용자명이 무엇이든 토큰만 맞으면 된다
     }
 
+    if ($dryRun) {
+        return [
+            'ok' => true, 'source' => 'token',
+            'reason' => "토큰 사용 ({$user}@{$parts['host']})",
+            'config' => [], 'file' => null,
+        ];
+    }
+
     $file = tempnam(sys_get_temp_dir(), 'nbgit');
     if ($file === false) {
-        return [[], null];
+        return $fail('token', '임시 자격증명 파일을 만들지 못했습니다. ' . sys_get_temp_dir() . ' 쓰기 권한을 확인해 주세요.');
     }
     chmod($file, 0600);
-    file_put_contents($file, sprintf($origin, rawurlencode($user), rawurlencode($token)) . "\n");
 
-    return [['credential.helper=store --file=' . $file], $file];
+    $line = sprintf(
+        '%s://%s:%s@%s%s',
+        $parts['scheme'],
+        rawurlencode($user),
+        rawurlencode($token),
+        $parts['host'],
+        isset($parts['port']) ? ':' . $parts['port'] : ''
+    );
+    if (file_put_contents($file, $line . "\n") === false) {
+        @unlink($file);
+        return $fail('token', '임시 자격증명 파일에 쓰지 못했습니다.');
+    }
+
+    return [
+        'ok' => true, 'source' => 'token',
+        'reason' => "토큰 사용 ({$user}@{$parts['host']})",
+        'config' => ['credential.helper=store --file=' . $file], 'file' => $file,
+    ];
+}
+
+/** @return array{0: string[], 1: ?string} [git -c 인자, 정리해야 할 임시 파일] */
+function git_credential_config(): array
+{
+    $r = git_credential_resolve();
+    return [$r['config'], $r['file']];
+}
+
+/** 대시보드 진단용 — 토큰을 만들지 않고 상태만 본다. */
+function git_credential_status(): array
+{
+    return git_credential_resolve(true);
 }
 
 /** push 거부가 "원격이 앞서 있어서"인지 판별한다. (rebase 로 풀 수 있는 경우) */
@@ -148,18 +201,30 @@ function git_push_rejected(string $stderr): bool
     return false;
 }
 
-/** push 실패 원인을 사람이 읽을 수 있는 안내로 바꾼다. */
-function git_push_hint(string $stderr): string
+/**
+ * push 실패 원인을 사람이 읽을 수 있는 안내로 바꾼다.
+ * $cred 는 git_credential_resolve() 결과 — 자격증명이 아예 없는지,
+ * 있는데 거부된 것인지에 따라 안내가 달라야 한다.
+ */
+function git_push_hint(string $stderr, array $cred = []): string
 {
     $s = trim($stderr);
-    if (stripos($s, 'could not read Username') !== false
+    $isAuth = stripos($s, 'could not read Username') !== false
+        || stripos($s, 'could not read Password') !== false
         || stripos($s, 'Authentication failed') !== false
-        || stripos($s, 'terminal prompts disabled') !== false) {
-        return 'GitHub 인증에 실패했습니다. 웹서버 사용자에게 자격증명이 없습니다. '
-            . 'admin/.env.php 의 GIT_TOKEN 에 GitHub 개인 액세스 토큰을 넣어 주세요. (원본: ' . $s . ')';
+        || stripos($s, 'terminal prompts disabled') !== false;
+
+    if ($isAuth) {
+        if (empty($cred['ok'])) {
+            return 'GitHub 인증에 실패했습니다. 자격증명이 구성되지 않았습니다 — '
+                . ($cred['reason'] ?? 'admin/.env.php 의 GIT_TOKEN 을 확인해 주세요.')
+                . ' (원본: ' . $s . ')';
+        }
+        return 'GitHub 이 자격증명을 거부했습니다 (' . ($cred['reason'] ?? '') . '). '
+            . '토큰이 만료되었거나 이 저장소에 대한 Contents: write 권한이 없을 수 있습니다. (원본: ' . $s . ')';
     }
     if (stripos($s, 'Permission denied') !== false || stripos($s, '403') !== false) {
-        return '저장소에 쓸 권한이 없습니다. 토큰 권한(contents: write)을 확인해 주세요. (원본: ' . $s . ')';
+        return '저장소에 쓸 권한이 없습니다. 토큰 권한(Contents: write)을 확인해 주세요. (원본: ' . $s . ')';
     }
     if (stripos($s, 'Could not resolve host') !== false || stripos($s, 'timed out') !== false) {
         return '네트워크에서 GitHub 에 접근하지 못했습니다. (원본: ' . $s . ')';
@@ -206,7 +271,9 @@ function git_sync_upload(?string $message = null): array
         $commitMsg = $message ?? ($g['commit_message'] ?? 'upload 파일 업로드');
 
         // 원격에 접근하는 명령에만 자격증명 헬퍼를 붙인다.
-        [$credConfig, $credFile] = git_credential_config();
+        $cred       = git_credential_resolve();
+        $credConfig = $cred['config'];
+        $credFile   = $cred['file'];
 
         $run = static function (array $args, string $label, array $config = []) use (&$log): array {
             [$code, $out, $err] = git_exec($args, $config);
@@ -252,7 +319,7 @@ function git_sync_upload(?string $message = null): array
         if ($code !== 0) {
             if (!git_push_rejected($err)) {
                 // 인증 실패 · 네트워크 오류 등은 rebase 로 해결되지 않는다.
-                throw new RuntimeException(git_push_hint($err), 0, null);
+                throw new RuntimeException(git_push_hint($err, $cred));
             }
             $run(['fetch', $remote, $branch], 'fetch', $credConfig);
             // --autostash: 배포 디렉터리에 커밋되지 않은 변경이 남아 있어도 rebase 가 멈추지 않게 한다.
@@ -263,7 +330,7 @@ function git_sync_upload(?string $message = null): array
             }
             [$code, , $err] = $run(['push', $remote, "HEAD:{$branch}"], 'push-retry', $credConfig);
             if ($code !== 0) {
-                throw new RuntimeException(git_push_hint($err));
+                throw new RuntimeException(git_push_hint($err, $cred));
             }
         }
 

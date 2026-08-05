@@ -29,6 +29,7 @@ $gitWrite     = is_dir($gitDir) && is_writable($gitDir);
 $phpUser      = function_exists('posix_getpwuid') && function_exists('posix_geteuid')
     ? (posix_getpwuid(posix_geteuid())['name'] ?? '알 수 없음')
     : (getenv('USER') ?: '알 수 없음');
+$cred         = $git['enabled'] ? git_credential_status() : null;
 
 require __DIR__ . '/include/header.php';
 ?>
@@ -161,6 +162,12 @@ require __DIR__ . '/include/header.php';
             <span class="k">.git 쓰기</span>
             <span class="v"><span class="tag <?= $gitWrite ? 'success dot' : 'danger dot' ?>"><?= $gitWrite ? '가능' : '불가' ?></span></span>
           </div>
+          <?php if ($cred !== null): ?>
+            <div class="row-i">
+              <span class="k">push 자격증명</span>
+              <span class="v"><span class="tag <?= $cred['ok'] ? 'success dot' : 'warn' ?>"><?= h($cred['reason']) ?></span></span>
+            </div>
+          <?php endif; ?>
           <div class="row-i"><span class="k">설정 파일</span><span class="v"><?= h(env_file() ?? '없음 — 기본값으로 동작 중') ?></span></div>
           <div class="row-i"><span class="k">실행 사용자 · PHP</span><span class="v"><?= h($phpUser) ?> · <?= h(PHP_VERSION) ?></span></div>
         </div>
