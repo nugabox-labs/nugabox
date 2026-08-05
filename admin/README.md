@@ -202,11 +202,27 @@ client_max_body_size 100m;
 
 ## 문제 해결
 
-**push 만 실패한다** — PHP-FPM 사용자의 `HOME` 이 비어 credential helper 를 못 찾는
-경우가 많습니다. `.env.php` 에서 지정하세요.
+**업로드는 되는데 push 만 실패한다** — 거의 항상 자격증명 문제입니다.
 
 ```
-GIT_HOME=/volume1/homes/nugabox
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+```
+
+`git push` 가 되는 건 **당신 계정**이지 웹서버 사용자(`http`)가 아닙니다.
+`http` 는 자기 홈에 자격증명이 없습니다. `.env.php` 에 토큰을 넣어 주세요.
+
+```
+GIT_TOKEN=github_pat_...
+GIT_USERNAME=nugaBox        # 비우면 원격 URL 의 사용자명을 씁니다
+```
+
+Fine-grained 토큰이면 이 저장소에 **Contents: Read and write** 권한만 있으면 됩니다.
+토큰은 임시 파일(0600)을 거쳐 전달되므로 `ps` 의 명령줄이나 화면 로그에 남지 않습니다.
+
+이미 만들어 둔 자격증명 파일이 있으면 그쪽을 써도 됩니다.
+
+```
+GIT_CREDENTIALS_FILE=/volume1/Develop/Sites/.git-credentials
 ```
 
 **로그인이 안 된다 / "비밀번호가 설정되지 않았습니다"** — 대시보드는 못 보니

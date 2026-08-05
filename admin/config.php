@@ -61,5 +61,13 @@ return [
         // 서버 저장소가 push 가능한 계정의 홈 경로를 지정한다. (빈 값 = 건드리지 않음)
         'home'           => env_str('GIT_HOME', '') ?: null,
         'timeout_sec'    => env_int('GIT_TIMEOUT_SEC', 180),
+
+        // push 자격증명. 웹서버 사용자는 보통 자기 홈에 자격증명이 없다.
+        //  GIT_TOKEN            — GitHub 개인 액세스 토큰 (contents: write)
+        //  GIT_USERNAME         — 비우면 원격 URL 의 사용자명을 쓴다
+        //  GIT_CREDENTIALS_FILE — 이미 만들어 둔 store 형식 파일을 쓸 때
+        'token'            => env_str('GIT_TOKEN', ''),
+        'username'         => env_str('GIT_USERNAME', ''),
+        'credentials_file' => env_str('GIT_CREDENTIALS_FILE', ''),
     ],
 ];

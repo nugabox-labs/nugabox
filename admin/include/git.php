@@ -8,8 +8,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-/** git 명령 하나를 실행하고 [exit code, stdout, stderr] 를 돌려준다. */
-function git_exec(array $args): array
+/**
+ * git 명령 하나를 실행하고 [exit code, stdout, stderr] 를 돌려준다.
+ * $extraConfig 는 `-c key=value` 로 앞에 덧붙는다. (자격증명 헬퍼 지정용)
+ */
+function git_exec(array $args, array $extraConfig = []): array
 {
     $g = (array) cfg('git', []);
 
@@ -21,14 +24,19 @@ function git_exec(array $args): array
         '-c', 'user.email=' . ($g['author_email'] ?? 'admin@nugabox.com'),
         '-c', 'core.quotepath=false',
     ];
+    foreach ($extraConfig as $kv) {
+        $base[] = '-c';
+        $base[] = $kv;
+    }
     $cmd = implode(' ', array_map('escapeshellarg', array_merge($base, $args)));
 
     $env = [
         'GIT_TERMINAL_PROMPT' => '0',   // 자격증명 없으면 프롬프트 대신 즉시 실패
         'GIT_ASKPASS'         => '',
-        'LC_ALL'              => 'C.UTF-8',
         'PATH'                => getenv('PATH') ?: '/usr/local/bin:/usr/bin:/bin',
     ];
+    // LC_ALL 을 고정하면 시놀로지처럼 해당 로케일이 없는 환경에서
+    // setlocale 경고가 stderr 에 섞인다. 시스템 설정을 그대로 쓴다.
     if (!empty($g['home'])) {
         $env['HOME'] = $g['home'];
     } elseif (getenv('HOME')) {
@@ -76,6 +84,90 @@ function git_exec(array $args): array
 }
 
 /**
+ * push 에 쓸 자격증명 헬퍼 설정을 준비한다.
+ *
+ * PHP-FPM 사용자(시놀로지는 보통 http)는 자기 홈에 자격증명이 없어
+ * "could not read Username for 'https://github.com'" 으로 실패한다.
+ * 토큰을 명령줄에 노출하지 않으려고, 0600 임시 파일에 담아
+ * credential.helper=store 로 넘긴다. (경로만 argv 에 남는다)
+ *
+ * @return array{0: string[], 1: ?string} [git -c 인자, 정리해야 할 임시 파일]
+ */
+function git_credential_config(): array
+{
+    $g = (array) cfg('git', []);
+
+    // 이미 만들어 둔 자격증명 파일을 쓰는 경우
+    $shared = (string) ($g['credentials_file'] ?? '');
+    if ($shared !== '' && is_readable($shared)) {
+        return [['credential.helper=store --file=' . $shared], null];
+    }
+
+    $token = (string) ($g['token'] ?? '');
+    if ($token === '') {
+        return [[], null];   // 서버에 이미 설정된 헬퍼에 맡긴다
+    }
+
+    // 원격 URL 에서 호스트와 사용자명을 얻는다.
+    [$code, $url] = git_exec(['remote', 'get-url', $g['remote'] ?? 'origin']);
+    if ($code !== 0 || $url === '') {
+        return [[], null];
+    }
+    $parts = parse_url(trim($url));
+    if (!$parts || !in_array($parts['scheme'] ?? '', ['https', 'http'], true) || empty($parts['host'])) {
+        return [[], null];   // ssh 원격이면 토큰을 쓸 일이 없다
+    }
+    $origin = $parts['scheme'] . '://%s:%s@' . $parts['host']
+        . (isset($parts['port']) ? ':' . $parts['port'] : '');
+    $user = (string) ($g['username'] ?? '');
+    if ($user === '') {
+        $user = (string) ($parts['user'] ?? '');
+    }
+    if ($user === '') {
+        $user = 'x-access-token';   // GitHub 은 사용자명이 무엇이든 토큰만 맞으면 된다
+    }
+
+    $file = tempnam(sys_get_temp_dir(), 'nbgit');
+    if ($file === false) {
+        return [[], null];
+    }
+    chmod($file, 0600);
+    file_put_contents($file, sprintf($origin, rawurlencode($user), rawurlencode($token)) . "\n");
+
+    return [['credential.helper=store --file=' . $file], $file];
+}
+
+/** push 거부가 "원격이 앞서 있어서"인지 판별한다. (rebase 로 풀 수 있는 경우) */
+function git_push_rejected(string $stderr): bool
+{
+    foreach (['rejected', 'non-fast-forward', 'fetch first', 'behind its remote'] as $needle) {
+        if (stripos($stderr, $needle) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/** push 실패 원인을 사람이 읽을 수 있는 안내로 바꾼다. */
+function git_push_hint(string $stderr): string
+{
+    $s = trim($stderr);
+    if (stripos($s, 'could not read Username') !== false
+        || stripos($s, 'Authentication failed') !== false
+        || stripos($s, 'terminal prompts disabled') !== false) {
+        return 'GitHub 인증에 실패했습니다. 웹서버 사용자에게 자격증명이 없습니다. '
+            . 'admin/.env.php 의 GIT_TOKEN 에 GitHub 개인 액세스 토큰을 넣어 주세요. (원본: ' . $s . ')';
+    }
+    if (stripos($s, 'Permission denied') !== false || stripos($s, '403') !== false) {
+        return '저장소에 쓸 권한이 없습니다. 토큰 권한(contents: write)을 확인해 주세요. (원본: ' . $s . ')';
+    }
+    if (stripos($s, 'Could not resolve host') !== false || stripos($s, 'timed out') !== false) {
+        return '네트워크에서 GitHub 에 접근하지 못했습니다. (원본: ' . $s . ')';
+    }
+    return 'git push 실패: ' . $s;
+}
+
+/**
  * upload 폴더를 스테이징 → 커밋 → push.
  *
  * @return array{ok:bool, committed:bool, pushed:bool, sha:?string, message:string, log:string}
@@ -113,8 +205,12 @@ function git_sync_upload(?string $message = null): array
         $uploadRel = ltrim(str_replace($repoDir, '', upload_dir()), '/');
         $commitMsg = $message ?? ($g['commit_message'] ?? 'upload 파일 업로드');
 
-        $run = static function (array $args, string $label) use (&$log): array {
-            [$code, $out, $err] = git_exec($args);
+        // 원격에 접근하는 명령에만 자격증명 헬퍼를 붙인다.
+        [$credConfig, $credFile] = git_credential_config();
+
+        $run = static function (array $args, string $label, array $config = []) use (&$log): array {
+            [$code, $out, $err] = git_exec($args, $config);
+            // 헬퍼 설정에는 파일 경로만 들어가지만, 로그에는 아예 남기지 않는다.
             $log[] = "$ git " . implode(' ', $args) . "\n" . trim($out . "\n" . $err);
             return [$code, $out, $err, $label];
         };
@@ -151,19 +247,23 @@ function git_sync_upload(?string $message = null): array
             return $result;
         }
 
-        // 4) push — 원격이 앞서 있으면 rebase 후 한 번 더 시도
-        [$code, , $err] = $run(['push', $remote, "HEAD:{$branch}"], 'push');
+        // 4) push — 원격이 앞서 있을 때만 rebase 후 한 번 더 시도한다.
+        [$code, , $err] = $run(['push', $remote, "HEAD:{$branch}"], 'push', $credConfig);
         if ($code !== 0) {
-            $run(['fetch', $remote, $branch], 'fetch');
+            if (!git_push_rejected($err)) {
+                // 인증 실패 · 네트워크 오류 등은 rebase 로 해결되지 않는다.
+                throw new RuntimeException(git_push_hint($err), 0, null);
+            }
+            $run(['fetch', $remote, $branch], 'fetch', $credConfig);
             // --autostash: 배포 디렉터리에 커밋되지 않은 변경이 남아 있어도 rebase 가 멈추지 않게 한다.
             [$rebaseCode] = $run(['rebase', '--autostash', "{$remote}/{$branch}"], 'rebase');
             if ($rebaseCode !== 0) {
                 $run(['rebase', '--abort'], 'rebase-abort');
                 throw new RuntimeException('원격과 충돌해 push 하지 못했습니다: ' . $err);
             }
-            [$code, , $err] = $run(['push', $remote, "HEAD:{$branch}"], 'push-retry');
+            [$code, , $err] = $run(['push', $remote, "HEAD:{$branch}"], 'push-retry', $credConfig);
             if ($code !== 0) {
-                throw new RuntimeException('git push 실패: ' . $err);
+                throw new RuntimeException(git_push_hint($err));
             }
         }
 
@@ -175,6 +275,9 @@ function git_sync_upload(?string $message = null): array
         $result['ok']      = false;
         $result['message'] = $e->getMessage();
     } finally {
+        if (!empty($credFile)) {
+            @unlink($credFile);
+        }
         flock($lock, LOCK_UN);
         fclose($lock);
     }
