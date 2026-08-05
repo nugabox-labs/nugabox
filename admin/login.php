@@ -83,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (count_attempts($attemptFile, $ip, $window) >= $maxTry) {
         $error = '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.';
     } elseif (!$configured) {
-        $error = '관리자 비밀번호가 설정되지 않았습니다. admin/.env.php 를 먼저 만들어 주세요.';
+        // 설정 파일을 못 읽는 경우와 비밀번호만 안 채운 경우를 구분해서 알린다.
+        $error = env_problem() ?? '관리자 비밀번호가 설정되지 않았습니다. admin/.env.php 의 ADMIN_PASSWORD 를 채워 주세요.';
     } elseif (hash_equals((string) cfg('admin_user', 'admin'), $user) && password_ok($pass)) {
         clear_attempts($attemptFile, $ip);
         admin_login_ok($user);

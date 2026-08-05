@@ -28,15 +28,29 @@ function env_all(): array
         dirname(__DIR__) . '/.env.php',
     ]);
 
-    $vars = [];
+    // 파일이 "없는" 것과 "있는데 못 읽는" 것을 구분한다. 후자를 조용히 넘기면
+    // 설정이 통째로 비어 보여서 엉뚱한 곳을 찾게 된다. (웹서버 사용자 권한 문제)
+    $vars  = [];
+    $state = 'missing';
+    $found = null;
+
     foreach ($candidates as $path) {
-        if (!is_file($path) || !is_readable($path)) {
+        if (!is_file($path)) {
             continue;
         }
-        $vars = env_parse((string) file_get_contents($path));
-        $vars['__FILE__'] = $path;
+        $found = $path;
+        $contents = is_readable($path) ? @file_get_contents($path) : false;
+        if ($contents === false) {
+            $state = 'unreadable';
+            continue;
+        }
+        $vars  = env_parse($contents);
+        $state = 'ok';
         break;
     }
+
+    $vars['__FILE__']  = $found;
+    $vars['__STATE__'] = $state;
     return $vars;
 }
 
@@ -116,8 +130,27 @@ function env_list(string $key, array $default): array
     return $items ? array_values($items) : $default;
 }
 
-/** 실제로 읽어들인 설정 파일 경로. 없으면 null. (대시보드 진단용) */
+/** 실제로 찾은 설정 파일 경로. 없으면 null. (대시보드 진단용) */
 function env_file(): ?string
 {
     return env_all()['__FILE__'] ?? null;
+}
+
+/** 설정 파일 상태: 'ok' | 'unreadable' | 'missing' */
+function env_state(): string
+{
+    return env_all()['__STATE__'] ?? 'missing';
+}
+
+/** 설정을 못 읽는 이유를 사람이 읽을 수 있게. 정상이면 null. */
+function env_problem(): ?string
+{
+    switch (env_state()) {
+        case 'unreadable':
+            return 'admin/.env.php 파일은 있지만 웹서버가 읽지 못합니다. 파일 읽기 권한을 확인해 주세요.';
+        case 'missing':
+            return 'admin/.env.php 가 없습니다. .env.php.example 을 복사해서 만들어 주세요.';
+        default:
+            return null;
+    }
 }

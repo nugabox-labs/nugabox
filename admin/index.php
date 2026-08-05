@@ -168,10 +168,28 @@ require __DIR__ . '/include/header.php';
               <span class="v"><span class="tag <?= $cred['ok'] ? 'success dot' : 'warn' ?>"><?= h($cred['reason']) ?></span></span>
             </div>
           <?php endif; ?>
-          <div class="row-i"><span class="k">설정 파일</span><span class="v"><?= h(env_file() ?? '없음 — 기본값으로 동작 중') ?></span></div>
+          <div class="row-i">
+            <span class="k">설정 파일</span>
+            <span class="v">
+              <?php if (env_state() === 'ok'): ?>
+                <?= h((string) env_file()) ?>
+              <?php else: ?>
+                <span class="tag danger dot"><?= env_state() === 'unreadable' ? '읽기 불가' : '없음' ?></span>
+                <?= h((string) (env_file() ?? 'admin/.env.php')) ?>
+              <?php endif; ?>
+            </span>
+          </div>
           <div class="row-i"><span class="k">실행 사용자 · PHP</span><span class="v"><?= h($phpUser) ?> · <?= h(PHP_VERSION) ?></span></div>
         </div>
-        <?php if (!$uploadWrite || !$gitWrite): ?>
+        <?php if (env_problem() !== null): ?>
+          <p class="hint-text">
+            <b><?= h(env_problem()) ?></b>
+            지금은 기본값으로 동작 중이라 아이디 · 비밀번호 · 토큰 설정이 모두 무시됩니다.
+            <?php if (env_state() === 'unreadable'): ?>
+              서버에서 <code>chgrp <?= h($phpUser) ?> admin/.env.php &amp;&amp; chmod 640 admin/.env.php</code> 를 실행해 주세요.
+            <?php endif; ?>
+          </p>
+        <?php elseif (!$uploadWrite || !$gitWrite): ?>
           <p class="hint-text">
             <?= $phpUser !== '알 수 없음' ? '웹서버 사용자(<b>' . h($phpUser) . '</b>)' : '웹서버 사용자' ?>에게
             <?= !$uploadWrite ? '<code>upload/</code>' : '' ?><?= !$uploadWrite && !$gitWrite ? ' 와 ' : '' ?><?= !$gitWrite ? '<code>.git/</code>' : '' ?>
