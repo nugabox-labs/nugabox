@@ -506,3 +506,7 @@ My Saved Places.
 \#*#
 .SynologyWorkingDirectory
 # End of https://www.toptal.com/developers/gitignore/api/phpstorm,intellij,visualstudiocode,jetbrains,netbeans,eclipse,macos,windows,adobe,dreamweaver,pycharm
+
+### Python ###
+__pycache__/
+*.py[cod]

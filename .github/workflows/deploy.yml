@@ -87,113 +87,49 @@ jobs:
             $GIT log -1 --oneline
           } >> "$DEPLOY_INFO_FILE"
 
+          # 알림에서 쓸 값
+          {
+            echo "DEPLOY_SUBJECT=$($GIT log -1 --pretty=%s | tr -d '\n')"
+            echo "DEPLOY_AUTHOR=$($GIT log -1 --pretty=%an | tr -d '\n')"
+          } >> "$GITHUB_ENV"
+
       - name: Send Success Notification
         if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GH_SERVER: ${{ github.server_url }}
           GH_REPO: ${{ github.repository }}
           GH_REF: ${{ github.ref_name }}
           GH_SHA: ${{ github.sha }}
           GH_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           DEPLOY_STATUS: success
-          DEPLOY_INFO_FILE: ${{ needs.build.outputs.deploy_info_file }}
+          DEPLOY_DIR: ${{ env.DEPLOY_DIR }}
         run: |
           set -e
           if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then echo "SLACK_WEBHOOK_URL 없음 — 알림 생략"; exit 0; fi
-          INFO=""
-          if [ -n "${DEPLOY_INFO_FILE:-}" ] && [ -f "$DEPLOY_INFO_FILE" ]; then INFO=$(cat "$DEPLOY_INFO_FILE"); fi
-          export INFO
           PYBIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
           if [ -z "$PYBIN" ]; then echo "python 없음 — 알림 생략"; exit 0; fi
-          "$PYBIN" << 'PY'
-          import json, os, urllib.error, urllib.request
-
-          def send(text: str) -> None:
-              # Slack 수신 웹훅은 채널·이름·아이콘이 앱 설정에 고정되어 있어 payload 로 덮어쓰지 않는다.
-              body = {"text": text}
-              req = urllib.request.Request(
-                  os.environ["SLACK_WEBHOOK_URL"],
-                  data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
-                  headers={"Content-Type": "application/json"},
-                  method="POST",
-              )
-              try:
-                  with urllib.request.urlopen(req, timeout=45) as r:
-                      print("slack:", r.read().decode("utf-8", "replace").strip())
-              except urllib.error.HTTPError as e:
-                  # invalid_payload · channel_not_found 등 슬랙이 돌려주는 사유를 로그에 남긴다.
-                  print("slack error:", e.code, e.read().decode("utf-8", "replace").strip())
-                  raise
-
-          info = os.environ.get("INFO", "").strip()
-          if len(info) > 2800:
-              info = info[:2800] + "\n…(이하 생략)"
-          sha = os.environ["GH_SHA"]
-          lines = [
-              ":white_check_mark: *배포 성공* — nugabox.github.io",
-              "",
-              f"*저장소*  `{os.environ['GH_REPO']}`",
-              f"*브랜치*  `{os.environ['GH_REF']}`",
-              f"*커밋*  `{sha[:7]}`  (`{sha}`)",
-              f"*실행*  <{os.environ['GH_RUN_URL']}|Actions 로그 보기>",
-              "",
-              "*배포 정보*",
-              "```",
-              info if info else "(없음)",
-              "```",
-          ]
-          send("\n".join(lines))
-          PY
+          SCRIPT="${DEPLOY_DIR}/.github/slack_notify.py"
+          if [ ! -f "$SCRIPT" ]; then echo "알림 스크립트 없음 ($SCRIPT) — 생략"; exit 0; fi
+          "$PYBIN" "$SCRIPT"
 
       - name: Send Failure Notification
         if: failure()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GH_SERVER: ${{ github.server_url }}
           GH_REPO: ${{ github.repository }}
           GH_REF: ${{ github.ref_name }}
           GH_SHA: ${{ github.sha }}
           GH_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           DEPLOY_STATUS: failure
+          DEPLOY_DIR: ${{ env.DEPLOY_DIR }}
           DEPLOY_INFO_FILE: ${{ needs.build.outputs.deploy_info_file }}
         run: |
           set -e
           if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then echo "SLACK_WEBHOOK_URL 없음 — 알림 생략"; exit 0; fi
-          INFO=""
-          if [ -n "${DEPLOY_INFO_FILE:-}" ] && [ -f "$DEPLOY_INFO_FILE" ]; then INFO=$(cat "$DEPLOY_INFO_FILE"); fi
-          export INFO
           PYBIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
           if [ -z "$PYBIN" ]; then echo "python 없음 — 알림 생략"; exit 0; fi
-          "$PYBIN" << 'PY'
-          import json, os, urllib.error, urllib.request
-
-          def send(text: str) -> None:
-              body = {"text": text}
-              req = urllib.request.Request(
-                  os.environ["SLACK_WEBHOOK_URL"],
-                  data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
-                  headers={"Content-Type": "application/json"},
-                  method="POST",
-              )
-              try:
-                  with urllib.request.urlopen(req, timeout=45) as r:
-                      print("slack:", r.read().decode("utf-8", "replace").strip())
-              except urllib.error.HTTPError as e:
-                  print("slack error:", e.code, e.read().decode("utf-8", "replace").strip())
-                  raise
-
-          info = os.environ.get("INFO", "").strip()
-          if len(info) > 2800:
-              info = info[:2800] + "\n…(이하 생략)"
-          sha = os.environ["GH_SHA"]
-          lines = [
-              ":rotating_light: *배포 실패* — nugabox.github.io",
-              "",
-              f"*저장소*  `{os.environ['GH_REPO']}`",
-              f"*브랜치*  `{os.environ['GH_REF']}`",
-              f"*커밋*  `{sha[:7]}`  (`{sha}`)",
-              f"*실행*  <{os.environ['GH_RUN_URL']}|Actions 로그 보기>",
-          ]
-          if info:
-              lines += ["", "*마지막으로 수집된 배포 정보*", "```", info, "```"]
-          send("\n".join(lines))
-          PY
+          SCRIPT="${DEPLOY_DIR}/.github/slack_notify.py"
+          if [ ! -f "$SCRIPT" ]; then echo "알림 스크립트 없음 ($SCRIPT) — 생략"; exit 0; fi
+          "$PYBIN" "$SCRIPT"
