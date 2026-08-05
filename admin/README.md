@@ -79,16 +79,47 @@ NUGABOX_ENV_FILE=/volume1/Develop/Sites/.env
 
 ### 2. 권한
 
-PHP-FPM 실행 사용자가 아래 두 가지에 쓸 수 있어야 합니다.
+먼저 PHP-FPM 실행 사용자를 확인합니다. 시놀로지 웹 스테이션은 보통 `http` 입니다.
 
 ```bash
-# 업로드 폴더
-chown -R <php-fpm-user> /volume1/Develop/Sites/nugabox.github.io/upload
-chmod 775 /volume1/Develop/Sites/nugabox.github.io/upload
-
-# git 작업 트리 (커밋을 하려면 .git 에도 쓰기 권한 필요)
-chown -R <php-fpm-user> /volume1/Develop/Sites/nugabox.github.io/.git
+ps -ef | grep php-fpm      # 'php-fpm: pool www' 프로세스의 소유자
 ```
+
+PHP 가 써야 하는 곳은 **`upload/` 와 `.git/` 둘뿐**입니다.
+잠금 파일과 로그인 시도 기록은 저장소가 아니라 시스템 임시 폴더에 씁니다.
+(`RUNTIME_DIR` 로 바꿀 수 있습니다)
+
+> **⚠ `chown` 으로 소유자를 바꾸지 마세요.**
+> `.git` 의 소유자가 웹서버 사용자로 바뀌면, 배포 러너(root)가 같은 저장소에서
+> `fatal: detected dubious ownership` 로 멈춰 **CI/CD 가 깨집니다.**
+> 소유자는 그대로 두고 **그룹만** 열어 주는 것이 맞습니다.
+
+```bash
+cd /volume1/Develop/Sites/nugabox.github.io
+
+chgrp -R http .git upload                          # 소유자 유지, 그룹만 http
+chmod -R g+rwX .git upload
+find .git upload -type d -exec chmod g+s {} \;     # 새로 생기는 파일도 그룹 상속
+```
+
+시놀로지 공유 폴더에 ACL 이 켜져 있으면(`ls -l` 결과 끝에 `+` 표시)
+`chmod` 가 덮어써질 수 있습니다. 그럴 때는 ACL 로 넣습니다.
+
+```bash
+synoacltool -get upload                            # 현재 ACL 확인
+synoacltool -add upload "user:http:allow:rwxpdDaARWc--:fd--"
+synoacltool -add .git   "user:http:allow:rwxpdDaARWc--:fd--"
+```
+
+설정한 뒤 실제로 쓸 수 있는지 확인합니다.
+
+```bash
+su http -s /bin/sh -c 'touch upload/.probe' && echo OK && rm -f upload/.probe
+```
+
+가장 확실한 확인은 관리자 **대시보드**입니다.
+`저장소 · 환경` 카드에 `upload 쓰기` · `.git 쓰기` 가 각각 **가능** 으로 뜨고
+`실행 사용자` 가 표시됩니다. 하나라도 **불가** 면 경고 문구가 함께 나옵니다.
 
 ### 3. 웹서버 (시놀로지 DSM)
 
@@ -138,6 +169,12 @@ client_max_body_size 100m;
 - push 가 거부되면 `fetch` → `rebase --autostash` 후 한 번 더 시도합니다.
 - push 가 끝내 실패해도 **파일은 서버에 남아 URL 로 접근 가능**합니다.
   원인을 해결한 뒤 파일 관리 화면의 **git 동기화** 버튼을 누르면 밀린 커밋이 올라갑니다.
+
+> **⚠ push 실패는 방치하면 안 됩니다.**
+> 커밋만 되고 push 가 안 된 상태에서 다른 배포가 돌면
+> `git reset --hard origin/main` 이 그 커밋을 되돌리면서 **올린 파일도 사라집니다.**
+> 그래서 대시보드와 파일 목록에 `푸시 안 된 커밋 N개` 경고를 띄웁니다.
+> 이 경고가 보이면 먼저 **git 동기화** 를 눌러 주세요.
 - push 가 성공하면 GitHub Actions 의 배포 워크플로가 돌면서 Slack 으로 알림이 갑니다.
   (저장소 시크릿 `SLACK_WEBHOOK_URL`. 없으면 배포는 되고 알림만 건너뜁니다)
 

@@ -25,6 +25,10 @@ return [
     'login_max_attempts'  => env_int('LOGIN_MAX_ATTEMPTS', 10),
     'login_window_sec'    => env_int('LOGIN_WINDOW_MINUTES', 15) * 60,
 
+    // 잠금 · 로그인 시도 기록을 둘 폴더. 비우면 시스템 임시 폴더를 쓴다.
+    // (admin/ 에 쓰기 권한을 주지 않기 위해 기본적으로 저장소 밖에 둔다)
+    'runtime_dir'         => env_str('RUNTIME_DIR', ''),
+
     // ── 업로드 ────────────────────────────────────────────────
     'root_dir'         => $rootDir,
     'upload_dir'       => $uploadDir,

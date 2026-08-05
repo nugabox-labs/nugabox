@@ -106,7 +106,11 @@ async function loadList() {
       : '<tr><td colspan="4" class="text-center text-muted py-5">아직 업로드된 파일이 없습니다.</td></tr>';
 
     const git = data.git || {};
-    const gitLabel = git.enabled ? `${git.branch} · ${git.last_commit}` : 'git 동기화 꺼짐';
+    let gitLabel = 'git 동기화 꺼짐';
+    if (git.enabled) {
+      gitLabel = `${git.branch} · ${git.last_commit}`;
+      if (git.ahead) gitLabel = `⚠ 푸시 안 된 커밋 ${git.ahead}개 — ${gitLabel}`;
+    }
     listSummary.textContent = `총 ${data.count}개 · ${data.total_size} — ${gitLabel}`;
   } catch (err) {
     fileRows.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-5">${err.message}</td></tr>`;

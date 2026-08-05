@@ -98,7 +98,7 @@ function git_sync_upload(?string $message = null): array
         return $result;
     }
 
-    $lockFile = ADMIN_DIR . '/.git-sync.lock';
+    $lockFile = runtime_file('git-sync.lock');
     $lock = fopen($lockFile, 'c');
     if ($lock === false || !flock($lock, LOCK_EX)) {
         $result['ok']      = false;
@@ -188,16 +188,27 @@ function git_status_summary(): array
 {
     $g = (array) cfg('git', []);
     if (empty($g['enabled'])) {
-        return ['enabled' => false, 'branch' => '-', 'last_commit' => 'git 동기화 꺼짐', 'clean' => null];
+        return [
+            'enabled' => false, 'branch' => '-', 'last_commit' => 'git 동기화 꺼짐',
+            'clean' => null, 'ahead' => null,
+        ];
     }
+    $remote       = $g['remote'] ?? 'origin';
+    $remoteBranch = $g['branch'] ?? 'main';
+
     [$bc, $branch] = git_exec(['rev-parse', '--abbrev-ref', 'HEAD']);
     [$lc, $last]   = git_exec(['log', '-1', '--pretty=%h %s (%cr)']);
     [$sc, $status] = git_exec(['status', '--porcelain', '--', 'upload']);
+
+    // push 가 실패해 로컬에만 남은 커밋이 있는지 확인한다. 이 상태로 두면
+    // 다음 배포의 git reset --hard 가 업로드 파일까지 지워버린다.
+    [$ac, $ahead] = git_exec(['rev-list', '--count', "{$remote}/{$remoteBranch}..HEAD"]);
 
     return [
         'enabled'     => true,
         'branch'      => $bc === 0 ? $branch : '-',
         'last_commit' => $lc === 0 && $last !== '' ? $last : '커밋 정보를 읽지 못했습니다.',
         'clean'       => $sc === 0 ? ($status === '') : null,
+        'ahead'       => $ac === 0 && is_numeric($ahead) ? (int) $ahead : null,
     ];
 }

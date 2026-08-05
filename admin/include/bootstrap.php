@@ -116,6 +116,22 @@ function h(?string $s): string
     return htmlspecialchars((string) $s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/* ── 런타임 상태 파일 ──────────────────────────────────────── */
+
+/**
+ * 잠금 · 로그인 시도 기록처럼 실행 중에만 쓰는 파일의 경로.
+ *
+ * admin/ 안에 두지 않는다. 그러면 웹서버 사용자에게 PHP 가 실행되는
+ * 디렉터리의 쓰기 권한을 줘야 하기 때문이다. 기본값은 시스템 임시 폴더이고,
+ * 저장소 경로로 이름을 나눠 한 서버에 여러 사이트가 있어도 겹치지 않는다.
+ */
+function runtime_file(string $name): string
+{
+    $dir = (string) cfg('runtime_dir', '');
+    $dir = rtrim($dir !== '' ? $dir : sys_get_temp_dir(), '/');
+    return $dir . '/nugabox-admin-' . substr(sha1(ROOT_DIR), 0, 8) . '-' . $name;
+}
+
 /* ── 파일 유틸 ─────────────────────────────────────────────── */
 
 /** 항상 실행 가능한 확장자로 취급해 거부할 목록. 이름 어디에 나타나도 막는다. */

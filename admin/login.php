@@ -16,7 +16,7 @@ if (admin_is_logged_in()) {
 }
 
 /* ── 무차별 대입 완화: 파일 기반 시도 횟수 제한 ─────────────── */
-$attemptFile = ADMIN_DIR . '/.login-attempts.json';
+$attemptFile = runtime_file('login-attempts.json');
 
 function load_attempts(string $file): array
 {
