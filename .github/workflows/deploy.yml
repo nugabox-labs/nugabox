@@ -70,17 +70,21 @@ jobs:
 
           cd "$DEPLOY_DIR"
 
+          # 관리자(PHP-FPM)가 같은 저장소에 커밋하므로 .git 안에 다른 사용자
+          # 소유 파일이 섞인다. safe.directory 를 명시해 소유권 검사에 걸리지 않게 한다.
+          GIT="git -c safe.directory=${DEPLOY_DIR}"
+
           step_time "git sync start"
-          git fetch origin main
-          git reset --hard origin/main
-          CUR="$(git rev-parse HEAD)"
+          $GIT fetch origin main
+          $GIT reset --hard origin/main
+          CUR="$($GIT rev-parse HEAD)"
           step_time "git sync done"
 
           {
             echo ""
             echo "HEAD: $CUR"
             echo ""
-            git log -1 --oneline
+            $GIT log -1 --oneline
           } >> "$DEPLOY_INFO_FILE"
 
       - name: Send Success Notification
