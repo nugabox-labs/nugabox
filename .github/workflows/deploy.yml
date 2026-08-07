@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DEPLOY_DIR: /volume1/Develop/Sites/nugabox.github.io
+  DEPLOY_DIR: /volume1/Develop/webapps/nugabox.github.io
 
 jobs:
   build:
@@ -96,7 +96,7 @@ jobs:
       - name: Send Success Notification
         if: success()
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           GH_SERVER: ${{ github.server_url }}
           GH_REPO: ${{ github.repository }}
           GH_REF: ${{ github.ref_name }}
@@ -106,17 +106,17 @@ jobs:
           DEPLOY_DIR: ${{ env.DEPLOY_DIR }}
         run: |
           set -e
-          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then echo "SLACK_WEBHOOK_URL 없음 — 알림 생략"; exit 0; fi
+          if [ -z "${MATTERMOST_WEBHOOK_URL:-}" ]; then echo "MATTERMOST_WEBHOOK_URL 없음 — 알림 생략"; exit 0; fi
           PYBIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
           if [ -z "$PYBIN" ]; then echo "python 없음 — 알림 생략"; exit 0; fi
-          SCRIPT="${DEPLOY_DIR}/.github/slack_notify.py"
+          SCRIPT="${DEPLOY_DIR}/.github/mattermost_notify.py"
           if [ ! -f "$SCRIPT" ]; then echo "알림 스크립트 없음 ($SCRIPT) — 생략"; exit 0; fi
           "$PYBIN" "$SCRIPT"
 
       - name: Send Failure Notification
         if: failure()
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           GH_SERVER: ${{ github.server_url }}
           GH_REPO: ${{ github.repository }}
           GH_REF: ${{ github.ref_name }}
@@ -127,9 +127,9 @@ jobs:
           DEPLOY_INFO_FILE: ${{ needs.build.outputs.deploy_info_file }}
         run: |
           set -e
-          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then echo "SLACK_WEBHOOK_URL 없음 — 알림 생략"; exit 0; fi
+          if [ -z "${MATTERMOST_WEBHOOK_URL:-}" ]; then echo "MATTERMOST_WEBHOOK_URL 없음 — 알림 생략"; exit 0; fi
           PYBIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
           if [ -z "$PYBIN" ]; then echo "python 없음 — 알림 생략"; exit 0; fi
-          SCRIPT="${DEPLOY_DIR}/.github/slack_notify.py"
+          SCRIPT="${DEPLOY_DIR}/.github/mattermost_notify.py"
           if [ ! -f "$SCRIPT" ]; then echo "알림 스크립트 없음 ($SCRIPT) — 생략"; exit 0; fi
           "$PYBIN" "$SCRIPT"

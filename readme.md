@@ -22,13 +22,7 @@ python3 -m http.server 1000
 | `clock/` | https://nugabox.com/clock | 아날로그 시계 (라이트/다크 테마) |
 | `error/` | https://nugabox.com/error | Windows BSOD 스타일 오류 페이지 |
 | `cyworld/` | https://nugabox.com/cyworld | 싸이월드 미니홈피 스타일 페이지 |
-
-### 관리자
-
-| 경로 | URL | 설명 |
-|------|-----|------|
-| `admin/` | https://nugabox.com/admin | 관리자 (대시보드 · 파일 관리). 설치·설정은 [admin/README.md](admin/README.md) |
-| `upload/` | https://nugabox.com/upload/ | 관리자에서 올린 공개 파일 |
+| `upload/` | https://nugabox.com/upload/ | 공개 파일 |
 
 ### tools 하위
 
