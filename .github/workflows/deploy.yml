@@ -1,4 +1,4 @@
-name: Deploy nugabox.github.io
+name: Deploy nugabox
 
 on:
   push:
@@ -6,15 +6,15 @@ on:
       - main
 
 concurrency:
-  group: nugabox.github.io-deploy
+  group: nugabox-deploy
   cancel-in-progress: false
 
 env:
-  DEPLOY_DIR: /volume1/Develop/webapps/nugabox.github.io
+  DEPLOY_DIR: /volume1/Develop/webapps/nugabox
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, x64, nugabox-github-io]
+    runs-on: [self-hosted, linux, x64, nugacloud]
     outputs:
       head_sha: ${{ steps.prep.outputs.head_sha }}
       deploy_info_file: ${{ steps.prep.outputs.deploy_info_file }}
@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          DI="/tmp/nugabox.github.io-deploy-${GITHUB_RUN_ID}.txt"
+          DI="/tmp/nugabox-deploy-${GITHUB_RUN_ID}.txt"
           echo "deploy_info_file=$DI" >> "$GITHUB_OUTPUT"
           echo "head_sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
@@ -40,7 +40,7 @@ jobs:
 
   report-build-status:
     needs: build
-    runs-on: [self-hosted, linux, x64, nugabox-github-io]
+    runs-on: [self-hosted, linux, x64, nugacloud]
 
     steps:
       - name: Build status
@@ -51,7 +51,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: [self-hosted, linux, x64, nugabox-github-io]
+    runs-on: [self-hosted, linux, x64, nugacloud]
 
     steps:
       - name: Deploy on Production Server
