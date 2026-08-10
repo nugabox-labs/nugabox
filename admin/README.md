@@ -1,40 +1,25 @@
-# NUGABOX 관리자
+# NUGABOX 관리자 설치
 
-`/admin` — 비밀번호 하나로 들어가서 앱 아이콘과 주소 연결을 고칩니다.
-저장하면 `data/*.json` 을 쓰고 **곧바로 커밋 · 푸시**합니다.
+`/admin` — 아이콘 배치 · 아이콘 파일 · 주소 연결. 저장하면 `data/*.json` 을 쓰고 곧바로 커밋 · 푸시한다.
 
-| 화면 | 하는 일 |
-|------|---------|
-| 아이콘 배치 | 순서 · 이름 · 주소 · 아이콘 · 배경색 · 상태 점 · 말풍선 · 숨김, 업데이트 표시 날짜 |
-| 아이콘 파일 | `assets/images/icons/` 업로드 · 이름변경 · 삭제 · 내려받기 |
-| 주소 연결 | `/blog` → 티스토리 처럼 바깥으로 보내는 주소 |
+배포가 `git reset --hard origin/main` 이므로 **push 까지 성공해야 변경이 남는다.**
 
-## 왜 DB 가 없나
+아래는 시놀로지 DSM(웹서버 계정 `http`) 기준. 배포 경로는 `/volume1/Develop/webapps/nugabox`.
 
-배포가 `git reset --hard origin/main` 입니다 (`.github/workflows/deploy.yml`).
-저장소가 곧 배포 디렉터리라서, **git 이 이 사이트의 데이터베이스**입니다.
-
-SQLite 를 쓰면 그 파일은 `.gitignore` 대상이 되어야 하고(안 그러면 배포마다 덮어씀),
-그러면 변경 이력 · 백업 · 롤백을 따로 만들어야 합니다. JSON 을 커밋하면 diff 로
-무엇이 바뀌었는지 보이고, 되돌리기는 `git revert` 로 끝납니다. 다루는 양도
-아이콘 수십 개라 쿼리가 필요 없습니다.
-
-## 설치
+## 1. 설정 파일
 
 ```bash
+cd /volume1/Develop/webapps/nugabox
 cp admin/.env.php.example admin/.env.php
+vi admin/.env.php
 ```
 
-열어서 최소한 이 둘을 채웁니다.
+최소 두 개:
 
 ```
-ADMIN_PASSWORD=...     # 또는 ADMIN_PASSWORD_HASH
-GIT_TOKEN=...          # GitHub 개인 액세스 토큰 (Contents: write)
+ADMIN_PASSWORD=...     # 비면 /admin 이 503 으로 막힌다
+GIT_TOKEN=...          # GitHub PAT, 이 저장소에 Contents: write
 ```
-
-`ADMIN_PASSWORD` 와 `ADMIN_PASSWORD_HASH` 가 **둘 다 비어 있으면 관리자는 503 으로
-완전히 막힙니다.** 로그인 화면도 뜨지 않습니다. 비밀번호가 없는데 문이 열려 있는
-상태를 만들지 않으려는 의도입니다.
 
 해시로 두려면:
 
@@ -42,74 +27,99 @@ GIT_TOKEN=...          # GitHub 개인 액세스 토큰 (Contents: write)
 php -r "echo password_hash('바꿀비밀번호', PASSWORD_DEFAULT), PHP_EOL;"
 ```
 
-`.env.php` 는 `.gitignore` 에 있어 커밋되지 않고, 배포의 `reset --hard` 에도
-지워지지 않습니다. 파일 앞뒤가 `<?php /*` … `*/` 로 감싸여 있어서 주소창에서
-`/admin/.env.php` 를 직접 열어도 빈 화면만 나옵니다. **이 두 줄을 지우면 설정이
-그대로 노출됩니다.**
+`.env.php` 는 `.gitignore` 에 있어 커밋되지 않고 `reset --hard` 에도 안 지워진다.
+파일 맨 위 `<?php /*` 와 맨 끝 `*/` 는 지우지 말 것. 지우면 설정이 그대로 노출된다.
 
-### 웹서버가 파일을 쓸 수 있어야 합니다
+값을 고치면 다음 요청부터 바로 적용된다. 재시작 불필요.
 
-PHP-FPM 사용자(시놀로지는 보통 `http`)에게 쓰기 권한이 필요한 곳:
+## 2. 권한
 
-```
-data/                    아이콘 배치 · 주소 연결
-assets/images/icons/     아이콘 파일
-저장소 루트              주소 연결의 스텁 폴더 생성 · 삭제
-.git/                    커밋
+웹서버 계정 확인:
+
+```bash
+ps -eo user,args | grep -i php | grep -v grep | awk '{print $1}' | sort -u
 ```
 
-`chown` 으로 소유자를 바꾸는 방법은 피하세요. 배포 러너가 같은 저장소를 쓰기 때문에
-소유권 검사가 깨집니다. 그룹 쓰기 권한(`chmod g+w`)으로 푸는 편이 안전합니다.
+`http` 로 나온다는 전제로:
 
-### DSM 웹 스테이션
+```bash
+cd /volume1/Develop/webapps/nugabox
+chown -R root:http .
+chmod -R u+rwX,g+rwX,o+rX .
+find . -type d -exec chmod g+s {} \;
+```
 
-- PHP 프로필의 **인덱스 파일 목록에 `index.php` 가 있어야** 합니다. 없으면 첫 화면이
-  뜨지 않습니다.
-- 아이콘 업로드 상한은 `MAX_UPLOAD_MB` 와 PHP 프로필의 `upload_max_filesize` ·
-  `post_max_size` 중 **작은 쪽**이 적용됩니다. 관리자 화면에 실제 적용값이 표시됩니다.
+`chmod` 는 대문자 `X` 여야 한다. 소문자 `x` 는 모든 파일을 실행 파일로 만든다.
+`g+s` 는 새로 생기는 파일이 `http` 그룹을 물려받게 한다.
 
-## push 가 가장 중요합니다
+확인:
 
-배포가 `reset --hard` 이므로, **커밋만 되고 push 가 실패한 상태를 방치하면 다음 배포
-때 작업이 통째로 사라집니다.** 그래서 push 실패는 조용히 넘어가지 않습니다.
+```bash
+sudo -u http touch .git/permtest && rm .git/permtest && echo "쓰기 OK"
+```
 
-- 실패하면 빨간 배너로 "파일은 저장했지만 GitHub 반영에 실패했습니다" 라고 알리고,
-  `git 로그` 를 펼쳐 원본 오류를 볼 수 있습니다.
-- 밀린 커밋이 있으면 **모든 화면 맨 위에** 경고와 `지금 푸시` 버튼이 계속 뜹니다.
-- 다음 저장 때, 바뀐 내용이 없어도 밀린 커밋을 다시 push 합니다.
+### git 내부 권한
 
-### `could not read Username for 'https://github.com'`
+`setgid` 는 그룹만 물려주고 그룹 쓰기 비트는 umask 가 정한다. 이대로 두면
+`.git/objects/xx/` 같은 새 폴더가 그룹 쓰기 없이 생겨, 나중에 다른 계정이
+그 안에 쓸 때 `Permission denied` 가 재발한다.
 
-웹서버 사용자는 자기 홈에 GitHub 자격증명이 없어서 push 만 실패합니다.
-`.env.php` 의 `GIT_TOKEN` 을 채우면 해결됩니다. 토큰은 명령줄이나 로그에 남지 않고
-`0600` 임시 파일로만 전달한 뒤 즉시 지웁니다.
+```bash
+git config core.sharedRepository group
+chmod -R g+rwX .git
+```
 
-`GIT_HOME` 은 credential helper 를 못 찾을 때만 쓰면 됩니다.
+### ACL 을 쓸 경우
 
-## 알아둘 동작
+`chmod` 는 ACL 이 걸린 항목에서 **ACL 을 제거한다.** 위 POSIX 방식과 섞지 말 것.
+ACL 로 갈 거면 `chown`/`chmod` 블록 대신:
 
-- **열은 항상 4** 입니다. 순번대로 4개씩 끊어 줄이 되고, 줄은 얼마든지 늘어납니다.
-  마지막 줄에서 남는 자리는 예전처럼 빈칸(`icon-none`)으로 자동으로 채워집니다.
-  빈칸은 폼에서 다루지 않습니다.
-- **숨김**은 자리를 차지하지 않습니다. 데이터에는 남고(`row: 0`) 화면에서만 빠지므로,
-  뒤쪽 아이콘이 앞으로 당겨져 4열이 유지됩니다.
-- 아이콘 파일 **이름을 바꾸면** 그 파일을 쓰던 아이콘의 참조도 같은 커밋에서 함께
-  바뀝니다. 한쪽만 바뀌면 깨진 이미지가 그대로 배포되기 때문입니다.
-- 쓰는 중인 파일은 그냥 지워지지 않습니다. `강제` 를 켜야 지워집니다.
-- 아이콘 배경색과 이미지는 **인라인 style** 로 나갑니다. `style.css` 에 `#id` 규칙을
-  다시 넣지 마세요. `data/icons.json` 이 유일한 출처입니다.
-- 주소 연결은 저장할 때 slug 폴더와 한 줄짜리 `index.php` 스텁을 자동으로 만들고,
-  목록에서 빠지면 지웁니다. **우리가 만든 스텁과 내용이 정확히 같은 폴더만** 지우므로
-  손댄 폴더나 진짜 하위 사이트는 건드리지 않습니다.
-- 리다이렉트는 **302** 입니다. 301 로 두면 브라우저가 영구 캐시해서, 나중에 대상을
-  바꿔도 이미 방문한 사람은 예전 주소로 계속 갑니다.
+```bash
+synoacltool -add . 'user:http:allow:rwxpdDaARWc--:fd--'
+synoacltool -enforce-inherit .            # 상속은 기존 항목에 자동 적용되지 않는다
+synoacltool -get .git | head              # "It's Linux mode" 면 상속이 안 내려간 것
+```
+
+한 단계만 내려가면:
+
+```bash
+find . -type d -exec synoacltool -enforce-inherit {} \;
+```
+
+## 3. DSM 웹 스테이션
+
+- PHP 프로필의 **인덱스 파일 목록에 `index.php`** 가 있어야 첫 화면이 뜬다.
+- 업로드 상한은 `MAX_UPLOAD_MB` 와 PHP 프로필의 `upload_max_filesize` ·
+  `post_max_size` 중 작은 쪽. 실제 적용값은 관리자 화면에 표시된다.
+
+## 4. 확인
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://nugabox.com/
+curl -s -o /dev/null -w '%{http_code}\n' https://nugabox.com/admin/login.php
+```
+
+`/admin` 에서 아무거나 저장 → 초록 배너 `저장 · 커밋 · 푸시 완료` 면 정상.
 
 ## 문제 해결
 
-| 증상 | 확인할 것 |
-|------|-----------|
-| 503 "관리자가 설정되지 않았습니다" | `.env.php` 가 없거나, 있는데 웹서버가 못 읽거나, 비밀번호가 비었습니다. 화면에 어느 쪽인지 나옵니다. |
-| 저장은 되는데 빨간 배너 | push 실패입니다. `git 로그` 를 펼쳐 원인을 보세요. 대개 `GIT_TOKEN`. |
-| 저장 후 "쓰지 못했습니다" | `data/` 또는 아이콘 폴더에 웹서버 쓰기 권한이 없습니다. |
-| 배포하면 변경이 되돌아감 | push 가 안 되고 있습니다. 상단 경고를 확인하세요. |
-| 첫 화면이 소스로 보이거나 404 | 웹 스테이션 인덱스 파일 목록에 `index.php` 가 없습니다. |
+| 증상 | 조치 |
+|------|------|
+| 503 `관리자가 설정되지 않았습니다` | `admin/.env.php` 없음 · 못 읽음 · 비밀번호 빔. 화면에 어느 쪽인지 나온다 |
+| `index.lock: Permission denied` | 2번 권한 |
+| 빨간 배너 `GitHub 반영에 실패` | 대개 `GIT_TOKEN`. `git 로그` 를 펼쳐 원문 확인 |
+| `원격을 확인할 수 없습니다` | `git show-ref \| grep remotes` 로 `refs/remotes/origin/main` 존재 확인 |
+| 저장 후 `쓰지 못했습니다` | `data/` · `assets/images/icons/` 쓰기 권한 |
+| 배포하면 변경이 되돌아감 | push 실패. 상단 경고와 `지금 푸시` 확인 |
+| 첫 화면 404 · 소스 노출 | 3번 인덱스 파일 목록 |
+
+## 로컬에서 보기
+
+```bash
+php -S localhost:8080
+# 또는
+docker run --rm -v "$PWD":/app -w /app -p 8080:8080 php:8.2-cli php -S 0.0.0.0:8080
+```
+
+로컬 `admin/.env.php` 에는 `GIT_ENABLED=false` 를 두는 게 좋다.
+켜 두면 저장할 때 실제 GitHub 로 푸시를 시도한다.
