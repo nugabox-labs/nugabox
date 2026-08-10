@@ -202,14 +202,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 드롭다운 메뉴 항목 생성
   if (dropdown) {
+    // 맨 끝의 🐶 는 효과가 아니라 관리자 바로가기다. data-effect 가 없으므로
+    // 아래 클릭 핸들러의 효과 전환에 걸리지 않고, <a target="_blank"> 라서
+    // 새 창 열기는 브라우저가 그대로 처리한다. (팝업 차단에도 걸리지 않는다)
     dropdown.innerHTML = effectOrder.map(key => {
       const meta = effectMeta[key];
       return `<button type="button" class="effect-option" data-effect="${key}" aria-label="${meta.label}" title="${meta.label}">
         <span class="effect-option-icon">${meta.icon}</span>
       </button>`;
-    }).join('');
+    }).join('') + `<a class="effect-option effect-option-admin" href="/admin" target="_blank" rel="noopener" aria-label="관리자" title="관리자">
+        <span class="effect-option-icon">🐶</span>
+      </a>`;
 
     dropdown.addEventListener('click', (e) => {
+      if (e.target.closest('.effect-option-admin')) {
+        closeDropdown();
+        return;
+      }
       const option = e.target.closest('[data-effect]');
       if (!option) return;
       switchEffect(option.dataset.effect);
