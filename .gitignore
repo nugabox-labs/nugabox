@@ -513,3 +513,11 @@ __pycache__/
 
 # 관리자 비밀 설정 (서버에만 둔다)
 admin/.env.php
+
+# /upload 는 관리자에서 올리는 공개 파일 폴더다.
+# 위쪽 확장자 규칙(*.psd, *.ai, *.msi, *.tmp, *.bak, *.lnk …)에 걸리면 파일이 올라가도
+# 커밋에서 조용히 빠지고, 다음 배포의 git reset --hard 가 그 파일을 지워 버린다.
+# 그래서 이 폴더만은 무시 규칙에서 되살린다. (숨김 파일은 계속 제외)
+!upload/**
+upload/.*
+!upload/.gitkeep

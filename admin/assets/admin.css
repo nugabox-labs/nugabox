@@ -139,6 +139,7 @@ button.danger { color: #a32b22; }
   color: #4a5058; cursor: pointer;
 }
 .iconbtn:hover { background: #f0f1f4; color: #22252b; text-decoration: none; }
+.iconbtn.ok { color: #1a7f42; border-color: #bfe3cc; background: #eef8f1; }
 .iconbtn.danger { color: #c3352b; }
 .iconbtn.danger:hover { background: #fdeceb; border-color: #f2c4c0; }
 .iconbtn svg { display: block; }
@@ -215,10 +216,32 @@ td.actions { text-align: right; white-space: nowrap; width: 1%; }
   display: block; width: 32px; height: 32px; border-radius: 8px;
   background: #fff center/cover no-repeat; box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
 }
+/* 긴 파일 주소가 표 폭을 밀어내지 않게 한 줄로 자른다. */
+.filelist .urlcell { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .linklist .slugcell { white-space: nowrap; }
 .linklist .slugcell input { width: 130px; }
 .linklist input.wide { width: 100%; }
 .linklist .newrow-tr td { background: #fafbfc; }
+
+/* 올릴 수 있는 확장자 안내. 업로드 상자 바로 위에 붙어 한 덩어리로 보이게 한다. */
+.extbox {
+  background: #fff; border: 1px solid #e6e8ec; border-radius: 11px;
+  padding: 14px 16px; margin: 16px 0 0;
+}
+.extbox h2 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+.extbox p { margin: 10px 0 0; font-size: 12px; line-height: 1.7; }
+.extgroups { display: grid; grid-template-columns: max-content 1fr; gap: 7px 14px; margin: 0; }
+@media (max-width: 620px) { .extgroups { grid-template-columns: 1fr; gap: 3px; } }
+.extgroups dt { font-size: 12px; color: #6d727b; white-space: nowrap; padding-top: 2px; }
+.extgroups dd { margin: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.extgroups code {
+  background: #f0f1f4; border-radius: 5px; padding: 1px 6px; font-size: 12px; color: #3b4048;
+}
+.extbox p code { background: #f6eceb; color: #a32b22; }
+
+/* 확장자 안내가 위에 붙으면 둘을 하나의 카드처럼 이어 붙인다. */
+.extbox + .uploadbox { margin-top: -1px; border-top-left-radius: 0; border-top-right-radius: 0; }
+.extbox:has(+ .uploadbox) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 
 .uploadbox {
   background: #fff; border: 1px solid #e6e8ec; border-radius: 11px;

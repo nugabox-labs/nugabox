@@ -31,10 +31,21 @@ return [
     'root_dir'   => $rootDir,
     'icons_dir'  => env_str('ICONS_DIR', $rootDir . '/assets/images/icons'),
     'icons_url'  => '/assets/images/icons',
+    // 공개 파일 폴더. 여기 올린 파일은 /upload/이름 으로 바로 열린다.
+    'uploads_dir' => env_str('UPLOADS_DIR', $rootDir . '/upload'),
+    'uploads_url' => '/upload',
 
     'max_upload_bytes' => env_int('MAX_UPLOAD_MB', 8) * 1024 * 1024,
     // 아이콘은 이미지만. svg 는 같은 오리진에서 스크립트가 돌 수 있어 기본 제외.
     'allowed_ext'      => env_list('ALLOWED_EXT', ['png', 'jpg', 'jpeg', 'webp', 'gif']),
+    // 업로드 파일도 화이트리스트로만 받는다. 목록에 없으면 거부하고,
+    // 허용 목록은 업로드 페이지 상단에 그대로 보여 준다.
+    // 비워 두면 기본 목록(bootstrap.php 의 UPLOAD_EXT_GROUPS)을 쓴다.
+    // 이 파일은 상수가 정의되기 전에 읽히므로 여기서 기본값을 펼치지 않는다.
+    //   → 실제 목록은 upload_allowed_ext() 가 정한다.
+    'upload_allowed_ext'   => env_list('UPLOAD_ALLOWED_EXT', []),
+    'upload_max_bytes'     => env_int('UPLOAD_MAX_MB', 0) * 1024 * 1024
+        ?: env_int('MAX_UPLOAD_MB', 8) * 1024 * 1024,
 
     // ── git 동기화 ────────────────────────────────────────────
     'git' => [

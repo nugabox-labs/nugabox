@@ -44,7 +44,7 @@ docker run --rm -v "$PWD":/app -w /app -p 1000:1000 php:8.2-cli php -S 0.0.0.0:1
 | `clock/` | https://nugabox.com/clock | 아날로그 시계 (라이트/다크 테마) |
 | `error/` | https://nugabox.com/error | Windows BSOD 스타일 오류 페이지 |
 | `cyworld/` | https://nugabox.com/cyworld | 싸이월드 미니홈피 스타일 페이지 |
-| `upload/` | https://nugabox.com/upload/ | 공개 파일 |
+| `upload/` | https://nugabox.com/upload/ | 공개 파일 (`/admin` > 업로드 파일 관리에서 올린다) |
 
 ### tools 하위
 
