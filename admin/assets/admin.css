@@ -1,0 +1,188 @@
+/* NUGABOX 관리자 — 외부 의존성 없이 한 파일로 끝낸다.
+   (예전 관리자는 부트스트랩·폰트어썸·Pretendard 를 통째로 넣어 파일이 수백 개였다) */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+               "Malgun Gothic", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #22252b;
+  background: #f5f6f8;
+}
+
+a { color: #2f6fdb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.muted { color: #8a8f98; font-weight: 400; }
+.spacer { flex: 1; }
+
+/* ── 로그인 ────────────────────────────────────────────────── */
+
+.login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.login-card {
+  width: 300px; padding: 36px 28px; background: #fff;
+  border-radius: 14px; box-shadow: 0 10px 40px rgba(0, 0, 0, .09); text-align: center;
+}
+.login-card h1 { margin: 0; font-size: 22px; letter-spacing: .5px; }
+.login-card p { margin: 4px 0 22px; }
+.login-card input[type=password] {
+  width: 100%; padding: 11px 12px; margin-bottom: 12px;
+  border: 1px solid #d8dbe0; border-radius: 8px; font-size: 15px;
+}
+.login-card button {
+  width: 100%; padding: 11px; border: 0; border-radius: 8px;
+  background: #22252b; color: #fff; font-size: 15px; cursor: pointer;
+}
+.login-card .error { color: #c3352b; margin: 0 0 12px; font-size: 13px; }
+
+/* ── 뼈대 ──────────────────────────────────────────────────── */
+
+.topbar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 22px; height: 54px; background: #22252b; color: #fff;
+}
+.topbar .brand { color: #fff; font-weight: 600; letter-spacing: .5px; }
+.topbar .brand span { color: #8a8f98; font-weight: 400; }
+.topbar nav { display: flex; gap: 4px; }
+.topbar nav a { color: #c3c7cf; padding: 6px 12px; border-radius: 7px; }
+.topbar nav a:hover { background: #32363e; text-decoration: none; }
+.topbar nav a.on { background: #3d434e; color: #fff; }
+.topbar-right { margin-left: auto; display: flex; gap: 14px; }
+.topbar-right a { color: #8a8f98; font-size: 13px; }
+
+main { max-width: 1080px; margin: 0 auto; padding: 24px 22px 120px; }
+
+.foot {
+  max-width: 1080px; margin: 0 auto; padding: 0 22px 40px;
+  display: flex; gap: 14px; color: #a3a8b0; font-size: 12px;
+}
+
+/* 아이콘 배치는 카드를 4열로 늘어놓아야 해서 넓게 쓴다. */
+main.wide, main.wide + .foot { max-width: none; }
+
+.pagehead { display: flex; align-items: center; gap: 14px; margin: 8px 0 4px; }
+.pagehead h1 { font-size: 19px; margin: 0; }
+.pagehead-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.pagehead .primary { margin-left: auto; }
+.pagehead-actions .primary { margin-left: 0; }
+
+/* ── 배너 ──────────────────────────────────────────────────── */
+
+.banner {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; margin-bottom: 14px; border-radius: 9px; font-size: 13px;
+}
+.banner strong { display: block; }
+.banner form { margin-left: auto; }
+.banner.ok     { background: #e7f6ec; color: #1c6b39; }
+.banner.warn   { background: #fdf3e0; color: #8a5b12; }
+.banner.danger { background: #fdeceb; color: #a32b22; }
+.banner.danger button {
+  border: 0; background: #c3352b; color: #fff;
+  padding: 7px 14px; border-radius: 7px; cursor: pointer; white-space: nowrap;
+}
+.gitlog { margin-bottom: 14px; font-size: 12px; }
+.gitlog summary { cursor: pointer; color: #8a8f98; }
+.gitlog pre {
+  background: #22252b; color: #d8dbe0; padding: 14px;
+  border-radius: 8px; overflow: auto; max-height: 320px;
+}
+
+/* ── 입력 ──────────────────────────────────────────────────── */
+
+input[type=text], input[type=password], select {
+  padding: 7px 9px; border: 1px solid #d8dbe0; border-radius: 7px;
+  font-size: 13px; font-family: inherit; background: #fff; max-width: 100%;
+}
+input:focus, select:focus { outline: 2px solid #b9d0f5; outline-offset: -1px; border-color: #7ea8ea; }
+label { display: block; font-size: 12px; color: #6d727b; margin-bottom: 8px; }
+label input[type=text], label select { display: block; width: 100%; margin-top: 3px; }
+label.inline { display: inline-flex; align-items: center; gap: 5px; margin: 0; font-size: 13px; color: inherit; }
+label.inline input { margin: 0; }
+label.inline input[type=text] { display: inline-block; width: auto; margin: 0; }
+label.del { color: #a32b22; }
+
+button {
+  padding: 6px 12px; border: 1px solid #d8dbe0; border-radius: 7px;
+  background: #fff; font-size: 13px; font-family: inherit; cursor: pointer;
+}
+button:hover { background: #f0f1f4; }
+button.primary { background: #22252b; border-color: #22252b; color: #fff; padding: 9px 18px; }
+button.primary:hover { background: #353942; }
+button.danger { color: #a32b22; }
+
+.sticky-save {
+  position: sticky; bottom: 0; padding: 16px 0 20px;
+  background: linear-gradient(to top, #f5f6f8 78%, rgba(245, 246, 248, 0));
+  text-align: right;
+}
+
+/* ── 아이콘 카드 ───────────────────────────────────────────── */
+
+/* minmax(0, 1fr) 이어야 한다. 그냥 1fr 이면 그리드 항목의 기본 min-width:auto 때문에
+   칸 안의 긴 주소 입력이 최소 너비를 밀어올려 4번째 칸이 컨테이너 밖으로 넘친다. */
+.cards {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px; margin: 16px 0;
+}
+@media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px)  { .cards { grid-template-columns: minmax(0, 1fr); } }
+
+/* 입력도 칸 밖으로 나가지 않게 한다. (input 의 기본 size 속성이 폭을 만든다) */
+.card input[type=text], .card select { width: 100%; min-width: 0; }
+
+.card {
+  background: #fff; border: 1px solid #e6e8ec; border-radius: 11px; padding: 12px;
+}
+.card.is-hidden { opacity: .5; }
+.card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
+.card-top .pos {
+  width: 21px; height: 21px; flex: none; border-radius: 6px; background: #eef0f3;
+  color: #6d727b; font-size: 11px; display: flex; align-items: center; justify-content: center;
+}
+.card-top .preview {
+  width: 30px; height: 30px; flex: none; border-radius: 8px;
+  background: #fff center/cover no-repeat; box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+}
+.card-top .grow { flex: 1; min-width: 0; font-weight: 600; }
+.card-top .mv { padding: 2px 6px; line-height: 1.2; }
+.card .pair { display: flex; gap: 8px; }
+.card .pair label { flex: 1; }
+.card .flags { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px; }
+
+.newbox {
+  border: 1px dashed #cfd3da; border-radius: 11px; padding: 14px 16px; margin: 22px 0;
+}
+.newbox legend { font-size: 13px; color: #6d727b; padding: 0 6px; }
+.newrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.newrow input, .newrow select { flex: 1; min-width: 150px; }
+.newbox p { margin: 8px 0 0; font-size: 12px; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 11px; overflow: hidden; }
+th, td { padding: 9px 12px; border-bottom: 1px solid #eef0f3; text-align: left; vertical-align: middle; }
+th { font-size: 12px; color: #8a8f98; font-weight: 500; background: #fafbfc; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num { color: #6d727b; font-size: 12px; white-space: nowrap; }
+td.actions { text-align: right; white-space: nowrap; }
+td.actions > * { margin-left: 8px; }
+.inline-form { display: inline; }
+.filelist tr.unused code { color: #8a8f98; }
+.filelist .thumb {
+  display: block; width: 32px; height: 32px; border-radius: 8px;
+  background: #fff center/cover no-repeat; box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
+}
+.linklist .slugcell { white-space: nowrap; }
+.linklist .slugcell input { width: 130px; }
+.linklist input.wide { width: 100%; }
+.linklist .newrow-tr td { background: #fafbfc; }
+
+.uploadbox {
+  background: #fff; border: 1px solid #e6e8ec; border-radius: 11px;
+  padding: 16px; margin: 16px 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.uploadbox p { width: 100%; margin: 0; font-size: 12px; }

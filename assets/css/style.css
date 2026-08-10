@@ -220,56 +220,9 @@ html.dark .gradient-overlay {
 .app-line .app-icons .icon[data-tooltip] { overflow: visible; }
 .app-line .app-icons .icon[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-6px); background-color: rgba(0, 0, 0, 0.8); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; pointer-events: none; z-index: 10; }
 .app-line .app-icons .icon[data-tooltip]:hover::after { opacity: 1; visibility: visible; }
-.app-line .app-icons #cloud { background-image: url(/assets/images/icons/icon_cloud_circle.png); }
-.app-line .app-icons #wiki{ background-image: url(/assets/images/icons/icon_wiki.png); }
-.app-line .app-icons #wiki_white{ background-image: url(/assets/images/icons/icon_wiki_white.png); background-color: #3A3E48; }
-.app-line .app-icons #nugabox2020 { background-image: url(/assets/images/icons/icon_nugabox_2020.png); }
-.app-line .app-icons #nugabox_labs { background-image: url(/assets/images/icons/icon_nugabox_light.png); background-color: #3A3E48 }
-.app-line .app-icons #portfolio { background-image: url(/assets/images/icons/icon_portfolio.png); }
-.app-line .app-icons #github { background-image: url(/assets/images/icons/icon_github.png); }
-.app-line .app-icons #velog { background-image: url(/assets/images/icons/icon_velog.png); background-color: #26C898; }
-.app-line .app-icons #blog { background-image: url(/assets/images/icons/icon_codenuga.png); }
-.app-line .app-icons #terminal { background-image: url(/assets/images/icons/icon_terminal.png); background-color: #404040; }
-.app-line .app-icons #devlabs { background-image: url(/assets/images/icons/icon_dev2.png);  }
-.app-line .app-icons #nuflix { background-image: url(/assets/images/icons/icon_nuflix.png); background-color: #222222; }
-.app-line .app-icons #cyworld { background-image: url(/assets/images/icons/icon_cyworld.png); }
-.app-line .app-icons #design { background-image: url(/assets/images/icons/icon_design.png); background-color: #001e36; }
-.app-line .app-icons #soundcloud { background-image: url(/assets/images/icons/icon_soundcloud-grad.png); }
-.app-line .app-icons #comin { background-image: url(/assets/images/icons/icon_comin_logo_white.png); background-color: #B7363C; }
-.app-line .app-icons #siiru { background-image: url(/assets/images/icons/icon_comin_logo_red.png); }
-.app-line .app-icons #apple { background-image: url(/assets/images/icons/icon_apple.png); }
-.app-line .app-icons #bowling { background-image: url(/assets/images/icons/icon_bowling2.png); }
+/* 개별 아이콘의 background-image · background-color 는 data/icons.json 에서 읽어
+   index.php 가 인라인 style 로 내보낸다. 여기에 #id 규칙을 다시 넣지 마세요. */
 .app-line .app-icons #soundcloud span{ font-size:13px; letter-spacing: -0.8px; }
-.app-line .app-icons #plex { background-image: url(/assets/images/icons/icon_plex2.png); background-color: #282828; }
-.app-line .app-icons #nugabox2021 { background-image: url(/assets/images/icons/icon_nugabox_2021.png); }
-.app-line .app-icons #tools { background-image: url(/assets/images/icons/icon_tools.png); background-color: #3A3E48; }
-.app-line .app-icons #devtools { background-image: url(/assets/images/icons/icon_nugabox_tools_dev_light.png); background-color: #3A3E48; }
-.app-line .app-icons #devlog { background-image: url(/assets/images/icons/icon_devlog.png); background-color: #3A3E48; }
-.app-line .app-icons #kakao { background-image: url(/assets/images/icons/icon_kakao.png) }
-.app-line .app-icons #kakaotalk { background-image: url(/assets/images/icons/icon_kakao_talk.png) }
-.app-line .app-icons #think { background-image: url(/assets/images/icons/icon_think.png); background-color: #FDF8FE; }
-.app-line .app-icons #mark { background-image: url(/assets/images/icons/icon_mark.png) }
-.app-line .app-icons #note { background-image: url(/assets/images/icons/icon_note6.png); }
-.app-line .app-icons #naver { background-image: url(/assets/images/icons/icon_naver.png) }
-.app-line .app-icons #clock { background-image: url(/assets/images/icons/icon_clock.png); background-color: #3A3E48; }
-.app-line .app-icons #set { background-image: url(/assets/images/icons/icon_set.png); background-color: #3A3E48; }
-.app-line .app-icons #developer { background-image: url(/assets/images/icons/icon_developer.png)}
-.app-line .app-icons #love { background-image: url(/assets/images/icons/icon_love.png)}
-.app-line .app-icons #ha { background-image: url(/assets/images/icons/icon_ha.png)}
-.app-line .app-icons #tesla { background-image: url(/assets/images/icons/icon_tesla.png); background-color: #e31937; }
-.app-line .app-icons #cmdcenter { background-image: url(/assets/images/icons/icon_cmdcenter.png);}
-.app-line .app-icons #gitlab { background-image: url(/assets/images/icons/icon_gitlab.png);}
-.app-line .app-icons #gitlab_black { background-image: url(/assets/images/icons/icon_gitlab_black.png);}
-.app-line .app-icons #work { background-image: url(/assets/images/icons/icon_work.png);}
-/* .app-line .app-icons #nugadesk { background-image: url(/assets/images/icons/icon_nugadesk.png);} */
-.app-line .app-icons #core { background-image: url(/assets/images/icons/icon_core.png); background-color: #000; }
-.app-line .app-icons #cyworld { background-image: url(/assets/images/icons/icon_cyworld.png);}
-.app-line .app-icons #support { background-image: url(/assets/images/icons/icon_support.png); background-color: #3A3E48;}
-.app-line .app-icons #marrifin { background-image: url(/assets/images/icons/icon_marrifin.png);}
-.app-line .app-icons #trip { background-image: url(/assets/images/icons/icon_trip.png);}
-.app-line .app-icons #backup { background-image: url(/assets/images/icons/icon_backup.png); background-color: #3A3E48;}
-.app-line .app-icons #todaytome { background-image: url(/assets/images/icons/icon_todaytome.png); background-color: #000;}
-.app-line .app-icons #nugawiki { background-image: url(/assets/images/icons/icon_nugawiki.png);}
 
 /** 인사말 텍스트 **/
 .welcome { margin:40px 0 10px 0; }

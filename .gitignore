@@ -510,3 +510,6 @@ My Saved Places.
 ### Python ###
 __pycache__/
 *.py[cod]
+
+# 관리자 비밀 설정 (서버에만 둔다)
+admin/.env.php

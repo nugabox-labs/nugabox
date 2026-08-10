@@ -1,3 +1,18 @@
+<?php
+/**
+ * NUGABOX 첫 화면.
+ *
+ * 앱 아이콘은 data/icons.json 에서 읽어 그린다. 예전에는 이 파일의 마크업과
+ * style.css 의 #id 규칙을 손으로 같이 고쳐야 했는데, 이제 관리자(/admin)가
+ * JSON 한 곳만 고치고 커밋·푸시까지 한다.
+ */
+declare(strict_types=1);
+
+require_once __DIR__ . '/include/site.php';
+
+$icons = icons_load();
+$site  = site_meta();
+?>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -56,43 +71,7 @@
       <div class="profile-cover"></div>
     </div>
     <div class="app-line">
-      <div class="app-icons">
-        <a class="icon hover-ani" id="github" href="https://github.com/nugaBox" target="_blank"><span>GitHub</span></a>
-        <a class="icon hover-ani" id="portfolio" href="https://portfolio.nugabox.com" target="_blank"><span>포트폴리오</span></a>
-        <a class="icon hover-ani" id="apple" href="https://apps.apple.com/kr/developer/nuga-jang/id1896473481" target="_blank"><span>App 개발</span></a>
-        <a class="icon hover-ani" id="cloud" href="https://cloud.nugabox.com" target="_blank"><span>클라우드</span></a>
-      </div>
-      <div class="app-icons">
-        <a class="icon hover-ani" id="nugabox_labs" href="https://github.com/nugabox-labs" target="_blank" data-tooltip="업데이트됨"><span><i class="status-dot status-updated"></i>Labs</span></a>
-        <a class="icon hover-ani" id="tools" href="https://labs.nugabox.com/tools" target="_blank"><span>Tools</span></a>
-        <a class="icon hover-ani" id="backup" href="https://backup.nugabox.com" target="_blank"><span>Backup</span></a>
-        <a class="icon hover-ani" id="support" href="https://support.nugabox.com" target="_blank"><span>고객지원</span></a>
-      </div>
-      <div class="app-icons">
-        <a class="icon hover-ani" id="core" href="https://core.nugabox.com" target="_blank" data-tooltip="업데이트됨"><span><i class="status-dot status-updated"></i>CORE</span></a>
-        <a class="icon hover-ani" id="nugawiki" href="https://wiki.nugabox.com" target="_blank" data-tooltip="업데이트됨"><span><i class="status-dot status-updated"></i>NUGAWIKI</span></a>
-        <a class="icon hover-ani" id="design" href="https://design.nugabox.com" target="_blank"><span>디자인</span></a>
-        <a class="icon hover-ani" id="plex" href="https://plex.nugabox.com" target="_blank"><span>NUPLEX</span></a>
-      </div>
-      <div class="app-icons">
-        <a class="icon hover-ani" id="naver" href="https://search.nugabox.com" target="_blank"><span>가벼운 검색</span></a>
-        <a class="icon hover-ani" id="ha" href="https://ha.nugabox.com" target="_blank"><span>HOME</span></a>
-        <a class="icon hover-ani" id="tesla" href="https://tesla.nugabox.com" target="_blank" data-tooltip="업데이트됨"><span><i class="status-dot status-updated"></i>Tesla FS</span></a>
-        <a class="icon hover-ani" id="bowling" href="https://labs.nugabox.com/bowling" target="_blank"><span>볼링장</span></a>
-      </div>
-      <div class="app-icons">
-        <!-- <a class="icon hover-ani" id="nugadesk" href="https://work.nugabox.com" target="_blank" data-tooltip="업데이트됨"><span><i class="status-dot status-updated"></i>NUGADESK</span></a> -->
-        <a class="icon hover-ani" id="note" href="https://heisnugaaaa.tistory.com" target="_blank"><span>생각 노트</span></a>
-        <a class="icon hover-ani" id="love" href="https://love.nugabox.com" target="_blank"><span>LOVE</span></a>
-        <a class="icon hover-ani" id="cyworld" href="https://labs.nugabox.com/cyworld" target="_blank"><span>미니홈피</span></a>
-        <a class="icon hover-ani" id="trip" href="https://travel.nugabox.com" target="_blank"><span>트래블로그</span></a>
-      </div>
-      <div class="app-icons">
-        <a class="icon hover-ani" id="todaytome" href="https://todaytome.nugabox.com" target="_blank" data-tooltip="업데이트됨"><span><i class="status-dot status-updated"></i>오늘 나에게</span></a>
-        <a class="icon hover-ani" id="marrifin" href="https://marrifin.nugabox.com" target="_blank" data-tooltip="배포 준비중"><span><i class="status-dot status-testing"></i>메리핀</span></a>
-        <a class="icon icon-none"></a>
-        <a class="icon icon-none"></a>
-      </div>
+<?= render_icon_rows($icons) ?>
     </div>
     <div class="welcome">
       <a class="arrow-icon">
@@ -118,7 +97,7 @@
     <div class="site-stats" aria-label="사이트 업데이트·방문 수">
       <span class="stat-item">
         <span class="stat-badge">Update</span>
-        <span class="stat-value">2026. 8. 10.</span>
+        <span class="stat-value"><?= e($site['updated']) ?></span>
       </span>
       <span class="stat-item">
         <span class="stat-badge">Visit</span>

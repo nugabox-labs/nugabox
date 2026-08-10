@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    { "slug": "blog", "url": "https://heisnugaaaa.tistory.com/", "note": "티스토리 블로그" },
+    { "slug": "wiki", "url": "https://wiki.nugabox.com/", "note": "NUGAWIKI" },
+    { "slug": "tools", "url": "https://labs.nugabox.com/tools", "note": "Labs 도구 모음" },
+    { "slug": "cyworld", "url": "https://labs.nugabox.com/cyworld", "note": "미니홈피" },
+    { "slug": "temp", "url": "https://www.notion.so/codenuga/Temp-236ffa6623884d92aed9f3ed2b61af5b", "note": "노션 임시 페이지" }
+  ]
+}
