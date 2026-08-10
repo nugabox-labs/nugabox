@@ -249,7 +249,7 @@ html.dark .gradient-overlay {
 .app-line .app-icons #kakaotalk { background-image: url(/assets/images/icons/icon_kakao_talk.png) }
 .app-line .app-icons #think { background-image: url(/assets/images/icons/icon_think.png); background-color: #FDF8FE; }
 .app-line .app-icons #mark { background-image: url(/assets/images/icons/icon_mark.png) }
-.app-line .app-icons #note { background-image: url(/assets/images/icons/icon_nuganote_dark.png); background-color: #3A3E48; }
+.app-line .app-icons #note { background-image: url(/assets/images/icons/icon_note6.png); }
 .app-line .app-icons #naver { background-image: url(/assets/images/icons/icon_naver.png) }
 .app-line .app-icons #clock { background-image: url(/assets/images/icons/icon_clock.png); background-color: #3A3E48; }
 .app-line .app-icons #set { background-image: url(/assets/images/icons/icon_set.png); background-color: #3A3E48; }
@@ -268,7 +268,7 @@ html.dark .gradient-overlay {
 .app-line .app-icons #marrifin { background-image: url(/assets/images/icons/icon_marrifin.png);}
 .app-line .app-icons #trip { background-image: url(/assets/images/icons/icon_trip.png);}
 .app-line .app-icons #backup { background-image: url(/assets/images/icons/icon_backup.png); background-color: #3A3E48;}
-.app-line .app-icons #todaytome { background-image: url(/assets/images/icons/icon_todaytome.png); background-color: #3A3E48;}
+.app-line .app-icons #todaytome { background-image: url(/assets/images/icons/icon_todaytome.png); background-color: #000;}
 .app-line .app-icons #nugawiki { background-image: url(/assets/images/icons/icon_nugawiki.png);}
 
 /** 인사말 텍스트 **/
