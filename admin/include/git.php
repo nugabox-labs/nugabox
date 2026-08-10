@@ -28,7 +28,14 @@ function git_exec(array $args, array $extraConfig = []): array
         $base[] = '-c';
         $base[] = $kv;
     }
-    $cmd = implode(' ', array_map('escapeshellarg', array_merge($base, $args)));
+    $argv = array_merge($base, $args);
+
+    // 배열 그대로 넘겨 셸을 거치지 않는다. escapeshellarg 는 로케일이 C 일 때
+    // 한글 같은 비 ASCII 바이트를 통째로 버려서, 커밋 메시지가 ": 파일명" 처럼
+    // 잘린 채 남는다. (PHP 7.4 미만에서만 예전 방식으로 되돌아간다)
+    $cmd = PHP_VERSION_ID >= 70400
+        ? $argv
+        : implode(' ', array_map('escapeshellarg', $argv));
 
     $env = [
         'GIT_TERMINAL_PROMPT' => '0',   // 자격증명 없으면 프롬프트 대신 즉시 실패
