@@ -26,11 +26,27 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
   width: 300px; padding: 36px 28px; background: #fff;
   border-radius: 14px; box-shadow: 0 10px 40px rgba(0, 0, 0, .09); text-align: center;
 }
-.login-card h1 { margin: 0; font-size: 22px; letter-spacing: .5px; }
-.login-card p { margin: 4px 0 22px; }
+/* 첫 화면의 .banner_img 와 같은 로고 · 같은 크기 */
+.login-card .brand-logo {
+  width: 180px; height: 40px; margin: 0 auto 26px;
+  background: url(/assets/images/banner/banner_2021.png) center/cover no-repeat;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.login-card button { letter-spacing: 1px; }
+.login-card input[type=text],
 .login-card input[type=password] {
   width: 100%; padding: 11px 12px; margin-bottom: 12px;
   border: 1px solid #d8dbe0; border-radius: 8px; font-size: 15px;
+}
+
+/* 아이디 칸 — 값은 그대로 전송되지만 손대지 못하게 CSS 로만 잠근다.
+   disabled 를 쓰면 값이 전송되지 않는다. */
+.login-card input.locked {
+  background: #f0f1f4; color: #8a8f98;
+  pointer-events: none; user-select: none;
 }
 .login-card button {
   width: 100%; padding: 11px; border: 0; border-radius: 8px;
@@ -106,13 +122,34 @@ label.inline input[type=text] { display: inline-block; width: auto; margin: 0; }
 label.del { color: #a32b22; }
 
 button {
-  padding: 6px 12px; border: 1px solid #d8dbe0; border-radius: 7px;
-  background: #fff; font-size: 13px; font-family: inherit; cursor: pointer;
+  padding: 8px 14px; border: 1px solid #d8dbe0; border-radius: 8px;
+  background: #fff; font-size: 13px; font-family: inherit; line-height: 1.3;
+  color: #22252b; cursor: pointer;
 }
 button:hover { background: #f0f1f4; }
-button.primary { background: #22252b; border-color: #22252b; color: #fff; padding: 9px 18px; }
+button.primary { background: #22252b; border-color: #22252b; color: #fff; }
 button.primary:hover { background: #353942; }
 button.danger { color: #a32b22; }
+
+/* 아이콘만 있는 정사각 버튼. <a> 와 <button> 이 똑같이 보이도록 맞춘다. */
+.iconbtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0; flex: none;
+  border: 1px solid #d8dbe0; border-radius: 8px; background: #fff;
+  color: #4a5058; cursor: pointer;
+}
+.iconbtn:hover { background: #f0f1f4; color: #22252b; text-decoration: none; }
+.iconbtn.danger { color: #c3352b; }
+.iconbtn.danger:hover { background: #fdeceb; border-color: #f2c4c0; }
+.iconbtn svg { display: block; }
+
+/* 파일 선택 — 브라우저 기본 버튼을 다른 버튼과 같은 모양으로 맞춘다. */
+.filepick { font-size: 13px; font-family: inherit; color: #6d727b; max-width: 100%; }
+.filepick::file-selector-button {
+  margin-right: 10px; padding: 8px 14px; border: 1px solid #d8dbe0; border-radius: 8px;
+  background: #fff; font-size: 13px; font-family: inherit; color: #22252b; cursor: pointer;
+}
+.filepick::file-selector-button:hover { background: #f0f1f4; }
 
 .sticky-save {
   position: sticky; bottom: 0; padding: 16px 0 20px;
@@ -168,8 +205,10 @@ th, td { padding: 9px 12px; border-bottom: 1px solid #eef0f3; text-align: left; 
 th { font-size: 12px; color: #8a8f98; font-weight: 500; background: #fafbfc; }
 tbody tr:last-child td { border-bottom: 0; }
 td.num { color: #6d727b; font-size: 12px; white-space: nowrap; }
-td.actions { text-align: right; white-space: nowrap; }
-td.actions > * { margin-left: 8px; }
+/* 동작 열은 폭을 고정한다. 줄마다 버튼 개수가 달라도 아이콘이 세로로 정렬된다. */
+td.actions { text-align: right; white-space: nowrap; width: 1%; }
+.actionbar { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.actionbar form { display: contents; }
 .inline-form { display: inline; }
 .filelist tr.unused code { color: #8a8f98; }
 .filelist .thumb {

@@ -203,7 +203,7 @@ layout_header('아이콘 파일', 'files');
 <form class="uploadbox" method="post" enctype="multipart/form-data">
   <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
   <input type="hidden" name="action" value="upload">
-  <input type="file" name="files[]" multiple accept="image/*" required>
+  <input class="filepick" type="file" name="files[]" multiple accept="image/*" required>
   <label class="inline"><input type="checkbox" name="overwrite" value="1"> 같은 이름 덮어쓰기</label>
   <button type="submit" class="primary">올리고 푸시</button>
   <p class="muted">
@@ -234,33 +234,56 @@ layout_header('아이콘 파일', 'files');
       <td class="num"><?= h($f['size_human']) ?></td>
       <td class="num muted"><?= h($f['modified']) ?></td>
       <td class="actions">
-        <a href="<?= h($SELF) ?>?download=<?= rawurlencode($f['name']) ?>">내려받기</a>
+        <div class="actionbar">
+          <a class="iconbtn" title="내려받기" aria-label="내려받기"
+             href="<?= h($SELF) ?>?download=<?= rawurlencode($f['name']) ?>"><?= ICON_DOWNLOAD ?></a>
 
-        <form method="post" class="inline-form"
-              onsubmit="var v=prompt('새 이름', '<?= h($f['name']) ?>'); if(!v) return false; this.newname.value=v;">
-          <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
-          <input type="hidden" name="action" value="rename">
-          <input type="hidden" name="name" value="<?= h($f['name']) ?>">
-          <input type="hidden" name="newname" value="">
-          <button type="submit">이름변경</button>
-        </form>
+          <form method="post" class="js-rename" data-name="<?= h($f['name']) ?>">
+            <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
+            <input type="hidden" name="action" value="rename">
+            <input type="hidden" name="name" value="<?= h($f['name']) ?>">
+            <input type="hidden" name="newname" value="">
+            <button class="iconbtn" type="submit" title="이름변경" aria-label="이름변경"><?= ICON_PENCIL ?></button>
+          </form>
 
-        <form method="post" class="inline-form"
-              onsubmit="return confirm('<?= h($f['name']) ?> 을(를) 지웁니다. 계속할까요?');">
-          <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
-          <input type="hidden" name="action" value="delete">
-          <input type="hidden" name="name" value="<?= h($f['name']) ?>">
-          <?php if ($u): ?>
-            <?php /* 쓰는 중인 파일은 명시적으로 켜야 지워진다. 켜지 않으면 서버가 거부한다. */ ?>
-            <label class="inline" title="쓰는 중인데도 지웁니다">
-              <input type="checkbox" name="force" value="1"> 강제
-            </label>
-          <?php endif; ?>
-          <button type="submit" class="danger">삭제</button>
-        </form>
+          <?php /* 쓰는 중인 파일은 확인 대화상자에서 한 번 더 동의해야 force 가 실린다.
+                    스크립트가 막혀 있으면 force 가 비어 서버가 삭제를 거부한다. */ ?>
+          <form method="post" class="js-delete" data-name="<?= h($f['name']) ?>"
+                data-users="<?= h(implode(', ', $u)) ?>">
+            <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="name" value="<?= h($f['name']) ?>">
+            <input type="hidden" name="force" value="">
+            <button class="iconbtn danger" type="submit"
+                    title="삭제<?= $u ? ' (쓰는 중)' : '' ?>" aria-label="삭제"><?= ICON_TRASH ?></button>
+          </form>
+        </div>
       </td>
     </tr>
   <?php endforeach; ?>
   </tbody>
 </table>
+
+<script>
+document.addEventListener('submit', function (ev) {
+  var f = ev.target;
+
+  if (f.classList.contains('js-rename')) {
+    var v = prompt('새 이름', f.dataset.name);
+    if (!v) { ev.preventDefault(); return; }
+    f.newname.value = v;
+    return;
+  }
+
+  if (f.classList.contains('js-delete')) {
+    var users = f.dataset.users;
+    var msg = users
+      ? f.dataset.name + ' 은(는) ' + users + ' 에서 쓰는 중입니다.\n'
+        + '지우면 그 아이콘의 이미지가 깨집니다. 그래도 지울까요?'
+      : f.dataset.name + ' 을(를) 지웁니다. 계속할까요?';
+    if (!confirm(msg)) { ev.preventDefault(); return; }
+    if (users) { f.force.value = '1'; }
+  }
+});
+</script>
 <?php layout_footer(); ?>

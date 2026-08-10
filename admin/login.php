@@ -65,12 +65,13 @@ $error  = '';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $pass = (string) ($_POST['password'] ?? '');
+    $user = (string) ($_POST['username'] ?? '');
 
     if (!csrf_check($_POST['csrf'] ?? null)) {
         $error = '세션이 만료되었습니다. 다시 시도해 주세요.';
     } elseif (count_attempts($attemptFile, $ip, $window) >= $maxTry) {
         $error = '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.';
-    } elseif (admin_password_verify($pass)) {
+    } elseif (hash_equals((string) cfg('admin_id', 'root'), $user) && admin_password_verify($pass)) {
         clear_attempts($attemptFile, $ip);
         admin_login_ok();
         header('Location: ' . $next);
@@ -95,14 +96,18 @@ $csrf = csrf_token();
 </head>
 <body class="login-body">
   <form class="login-card" method="post" autocomplete="off">
-    <h1>NUGABOX</h1>
-    <p class="muted">관리자</p>
+    <?php /* 첫 화면의 .banner_img 와 같은 로고. 관리자는 밝은 배경이라 라이트 테마 쪽을 쓴다. */ ?>
+    <h1 class="brand-logo"><span class="sr-only">NUGABOX</span></h1>
     <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
+    <?php /* disabled·readonly 를 쓰지 않는다. disabled 는 값이 전송되지 않고, 둘 다
+             태그로 잠그는 방식이다. CSS 로만 손대지 못하게 하고 값은 그대로 넘긴다. */ ?>
+    <input class="locked" type="text" name="username" value="<?= h(cfg('admin_id', 'root')) ?>"
+           autocomplete="username">
     <input type="password" name="password" placeholder="비밀번호" autofocus required>
     <?php if ($error !== ''): ?>
       <p class="error"><?= h($error) ?></p>
     <?php endif; ?>
-    <button type="submit">들어가기</button>
+    <button type="submit">LOGIN</button>
   </form>
 </body>
 </html>

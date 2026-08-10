@@ -15,6 +15,8 @@ return [
     //   ADMIN_PASSWORD_HASH — password_hash() 결과 (권장)
     //   ADMIN_PASSWORD      — 평문
     // 둘 다 비어 있으면 관리자 전체가 503 으로 막힌다. (admin_require_login)
+    // 로그인 화면에 고정으로 채워져 나가는 아이디. 실제로 바꿀 일은 거의 없다.
+    'admin_id'            => env_str('ADMIN_ID', 'root'),
     'admin_password_hash' => env_str('ADMIN_PASSWORD_HASH', ''),
     'admin_password'      => env_str('ADMIN_PASSWORD', ''),
     'session_name'        => env_str('SESSION_NAME', 'nugabox_admin'),

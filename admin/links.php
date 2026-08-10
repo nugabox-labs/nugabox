@@ -118,8 +118,13 @@ $csrf  = csrf_token();
         <td><input type="text" class="wide" name="link[<?= $k ?>][url]" value="<?= h($link['url']) ?>" required></td>
         <td><input type="text" name="link[<?= $k ?>][note]" value="<?= h($link['note']) ?>"></td>
         <td class="actions">
-          <a href="/<?= h($link['slug']) ?>/" target="_blank" rel="noopener">열기</a>
-          <label class="inline del"><input type="checkbox" name="link[<?= $k ?>][delete]" value="1"> 삭제</label>
+          <div class="actionbar">
+            <label class="inline del" title="저장할 때 이 연결과 폴더를 지웁니다">
+              <input type="checkbox" name="link[<?= $k ?>][delete]" value="1"> 삭제
+            </label>
+            <a class="iconbtn" href="/<?= h($link['slug']) ?>/" target="_blank" rel="noopener"
+               title="열어보기" aria-label="열어보기"><?= ICON_EXTERNAL ?></a>
+          </div>
         </td>
       </tr>
     <?php endforeach; ?>
