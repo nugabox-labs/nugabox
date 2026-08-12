@@ -314,7 +314,7 @@
             "order": 3,
             "type": "app",
             "id": "linkbox",
-            "label": "LinkBox",
+            "label": "linkbox",
             "url": "https://link.nugabox.com",
             "icon": "icon_linkbox.png",
             "bg": null,
