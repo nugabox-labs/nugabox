@@ -312,26 +312,21 @@
         {
             "row": 6,
             "order": 3,
-            "type": "blank"
+            "type": "app",
+            "id": "linkbox",
+            "label": "LINKBOX",
+            "url": "https://link.nugabox.com",
+            "icon": "icon_linkbox.png",
+            "bg": null,
+            "status": "updated",
+            "tooltip": "업데이트됨",
+            "newtab": true,
+            "hidden": false
         },
         {
             "row": 6,
             "order": 4,
             "type": "blank"
-        },
-        {
-            "row": 0,
-            "order": 1,
-            "type": "app",
-            "id": "nugadesk",
-            "label": "NUGADESK",
-            "url": "https://work.nugabox.com",
-            "icon": "icon_nugadesk.png",
-            "bg": null,
-            "status": "updated",
-            "tooltip": "업데이트됨",
-            "newtab": true,
-            "hidden": true
         }
     ]
 }
