@@ -326,7 +326,16 @@
         {
             "row": 6,
             "order": 4,
-            "type": "blank"
+            "type": "app",
+            "id": "sermon-editor",
+            "label": "영상 에디터",
+            "url": "https://github.com/nugaBox/sermon-editor",
+            "icon": "icon-sermon_editor.png",
+            "bg": null,
+            "status": "",
+            "tooltip": "",
+            "newtab": true,
+            "hidden": false
         }
     ]
 }
