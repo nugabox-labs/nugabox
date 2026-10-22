@@ -1,0 +1,17 @@
+{
+    "code": "logi-flow-202610",
+    "title": "로지텍 Flow 키보드 마우스 목록",
+    "createdAt": "2026-10-22T17:20:27+09:00",
+    "latest": "v1",
+    "versions": [
+        {
+            "version": "v1",
+            "uploadedAt": "2026-10-22T17:20:27+09:00",
+            "entry": "logitech_flow_keyboard.html",
+            "files": 2,
+            "bytes": 593367,
+            "source": "files",
+            "note": ""
+        }
+    ]
+}
