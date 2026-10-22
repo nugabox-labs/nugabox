@@ -308,6 +308,6 @@ function redirect_slug_clean(string $slug): ?string
         return null;
     }
     // 사이트의 실제 폴더와 겹치면 리다이렉트가 그 폴더를 가려 버린다.
-    $reserved = ['admin', 'assets', 'data', 'include', 'upload', 'api', 'index'];
+    $reserved = ['admin', 'assets', 'data', 'include', 'upload', 'pages', 'api', 'index'];
     return in_array($slug, $reserved, true) ? null : $slug;
 }

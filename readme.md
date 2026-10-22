@@ -45,6 +45,7 @@ docker run --rm -v "$PWD":/app -w /app -p 1000:1000 php:8.2-cli php -S 0.0.0.0:1
 | `error/` | https://nugabox.com/error | Windows BSOD 스타일 오류 페이지 |
 | `cyworld/` | https://nugabox.com/cyworld | 싸이월드 미니홈피 스타일 페이지 |
 | `upload/` | https://nugabox.com/upload/ | 공개 파일 (`/admin` > 업로드 파일 관리에서 올린다) |
+| `pages/` | https://nugabox.com/pages/<코드>/ | 목업 · HTML 페이지 (`/admin` > 페이지 관리에서 프로젝트 · 버전 단위로 올린다) |
 
 ### tools 하위
 

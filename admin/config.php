@@ -35,6 +35,11 @@ return [
     'uploads_dir' => env_str('UPLOADS_DIR', $rootDir . '/upload'),
     'uploads_url' => '/upload',
 
+    // 페이지 관리. 목업 · HTML 을 프로젝트별로 올려 /pages/<코드>/ 로 연다.
+    // 위치는 고정이다 — 프로젝트마다 생기는 index.php 스텁이 pages/_latest.php 를 부른다.
+    'pages_dir' => $rootDir . '/pages',
+    'pages_url' => '/pages',
+
     'max_upload_bytes' => env_int('MAX_UPLOAD_MB', 8) * 1024 * 1024,
     // 아이콘은 이미지만. svg 는 같은 오리진에서 스크립트가 돌 수 있어 기본 제외.
     'allowed_ext'      => env_list('ALLOWED_EXT', ['png', 'jpg', 'jpeg', 'webp', 'gif']),
@@ -46,6 +51,13 @@ return [
     'upload_allowed_ext'   => env_list('UPLOAD_ALLOWED_EXT', []),
     'upload_max_bytes'     => env_int('UPLOAD_MAX_MB', 0) * 1024 * 1024
         ?: env_int('MAX_UPLOAD_MB', 8) * 1024 * 1024,
+
+    // 페이지 관리 상한. 파일 하나(zip 포함) 크기는 비우면 MAX_UPLOAD_MB 를 따르고,
+    // 버전 하나에 풀린 전체 크기 · 파일 수는 zip 폭탄을 막는 선이다.
+    'pages_max_bytes'       => env_int('PAGES_MAX_MB', 0) * 1024 * 1024
+        ?: env_int('MAX_UPLOAD_MB', 8) * 1024 * 1024,
+    'pages_max_total_bytes' => env_int('PAGES_MAX_TOTAL_MB', 100) * 1024 * 1024,
+    'pages_max_files'       => env_int('PAGES_MAX_FILES', 2000),
 
     // ── git 동기화 ────────────────────────────────────────────
     'git' => [

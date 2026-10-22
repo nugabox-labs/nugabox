@@ -248,3 +248,55 @@ td.actions { text-align: right; white-space: nowrap; width: 1%; }
   padding: 16px; margin: 16px 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
 }
 .uploadbox p { width: 100%; margin: 0; font-size: 12px; }
+
+/* ── 페이지 관리 ───────────────────────────────────────────── */
+
+.pageform { display: block; }
+.pagegrid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 12px;
+}
+.pagegrid .span2 { grid-column: span 2; }
+.pagegrid [hidden] { display: none; }
+@media (max-width: 760px) {
+  .pagegrid { grid-template-columns: minmax(0, 1fr); }
+  .pagegrid .span2 { grid-column: auto; }
+}
+
+/* 끌어다 놓기 영역. 파일 입력 자체는 숨기고 두 버튼이 대신 연다. */
+.dropzone {
+  border: 1.5px dashed #cfd3da; border-radius: 10px; padding: 18px;
+  margin: 6px 0 12px; text-align: center; background: #fafbfc;
+}
+.dropzone p { margin: 0 0 10px; font-size: 13px; color: #6d727b; }
+.dropzone.is-over { border-color: #7ea8ea; background: #eef4fd; }
+.dropzone.has-files { border-style: solid; border-color: #bfe3cc; background: #eef8f1; }
+.dropzone.has-files p { color: #1c6b39; font-weight: 600; }
+.dropzone-btns { display: flex; gap: 8px; justify-content: center; }
+
+.pageform-foot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.pageform-foot .primary { margin-left: auto; }
+.pageform > p { margin: 10px 0 0; font-size: 12px; }
+
+.emptynote { text-align: center; padding: 30px 0; }
+
+.project { margin: 18px 0 22px; scroll-margin-top: 16px; }
+.project:target .project-head { box-shadow: 0 0 0 2px #b9d0f5; border-radius: 9px; }
+.project-head { display: flex; align-items: center; gap: 16px; padding: 6px 4px 10px; flex-wrap: wrap; }
+.project-title { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.project-title h2 { margin: 0; font-size: 15px; }
+.project-title code { font-size: 12px; color: #8a8f98; }
+.project-link { font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-head .actionbar { margin-left: auto; }
+
+.versionlist .vercell { white-space: nowrap; }
+.versionlist tr.is-latest td { background: #f6fbf8; }
+.versionlist .notecell { font-size: 12px; color: #4a5058; }
+.versionlist .urlcell { max-width: 220px; }
+.badge {
+  display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 10px;
+  background: #e7f6ec; color: #1c6b39; font-size: 11px; font-weight: 600; vertical-align: 1px;
+}
+/* 아이콘 버튼 줄에 섞이는 글자 버튼. 높이를 아이콘 버튼과 맞춘다. */
+.textbtn { height: 32px; padding: 0 10px; font-size: 12px; white-space: nowrap; }
+.iconbtn:disabled { opacity: .35; cursor: not-allowed; }
+.iconbtn:disabled:hover { background: #fff; }

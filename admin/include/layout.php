@@ -28,6 +28,10 @@ const ICON_LINK = ICON_SVG_OPEN
     . '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>'
     . '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
+const ICON_UPLOAD = ICON_SVG_OPEN
+    . '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>'
+    . '<polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+
 const ICON_CHECK = ICON_SVG_OPEN . '<polyline points="20 6 9 17 4 12"/></svg>';
 
 const ICON_EXTERNAL = ICON_SVG_OPEN
@@ -41,6 +45,7 @@ function layout_header(string $title, string $active, bool $wide = false): void
         'index' => ['아이콘 배치', '/admin/index.php'],
         'files' => ['아이콘 파일', '/admin/files.php'],
         'uploads' => ['업로드 파일 관리', '/admin/uploads.php'],
+        'pages' => ['페이지 관리', '/admin/pages.php'],
         'links' => ['주소 연결',   '/admin/links.php'],
     ];
     $csrf = csrf_token();
