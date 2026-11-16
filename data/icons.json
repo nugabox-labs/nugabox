@@ -206,8 +206,8 @@
             "url": "https://marrifin.nugabox.com",
             "icon": "icon_marrifin.png",
             "bg": null,
-            "status": "testing",
-            "tooltip": "배포 준비중",
+            "status": "",
+            "tooltip": "",
             "newtab": true,
             "hidden": false
         },
@@ -304,8 +304,8 @@
             "url": "https://prnd.nugabox.com",
             "icon": "icon_prnd.png",
             "bg": null,
-            "status": "testing",
-            "tooltip": "출시 준비 중",
+            "status": "updated",
+            "tooltip": "출시됨",
             "newtab": true,
             "hidden": false
         },
@@ -318,8 +318,8 @@
             "url": "https://todaytome.nugabox.com",
             "icon": "icon_todaytome.png",
             "bg": "#000",
-            "status": "updated",
-            "tooltip": "업데이트됨",
+            "status": "",
+            "tooltip": "",
             "newtab": true,
             "hidden": false
         },
